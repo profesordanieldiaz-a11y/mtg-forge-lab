@@ -1,0 +1,221 @@
+{
+  "object": "deck",
+  "id": "8b739c90-3e05-4e1d-a82e-48e0ef219dc0",
+  "name": "Cartas de prueba",
+  "format": null,
+  "layout": "list",
+  "uri": "https://api.scryfall.com/decks/8b739c90-3e05-4e1d-a82e-48e0ef219dc0",
+  "scryfall_uri": "https://scryfall.com/@ElsrIki/decks/8b739c90-3e05-4e1d-a82e-48e0ef219dc0",
+  "description": null,
+  "trashed": false,
+  "in_compliance": true,
+  "sections": {
+    "primary": [
+      "columna"
+    ],
+    "secondary": [
+      "columnb"
+    ]
+  },
+  "entries": {
+    "columnb": [
+      {
+        "object": "deck_entry",
+        "id": "223b0275-f421-4e00-9e29-a812bf9a38aa",
+        "deck_id": "8b739c90-3e05-4e1d-a82e-48e0ef219dc0",
+        "section": "columnb",
+        "cardinality": 293.71,
+        "count": 1,
+        "raw_text": "",
+        "found": false,
+        "printing_specified": false,
+        "finish": false,
+        "card_digest": null
+      }
+    ],
+    "columna": [
+      {
+        "object": "deck_entry",
+        "id": "992c69e3-7430-4670-950e-459016cbee73",
+        "deck_id": "8b739c90-3e05-4e1d-a82e-48e0ef219dc0",
+        "section": "columna",
+        "cardinality": 424.79,
+        "count": 1,
+        "raw_text": "",
+        "found": false,
+        "printing_specified": false,
+        "finish": false,
+        "card_digest": null
+      },
+      {
+        "object": "deck_entry",
+        "id": "88535294-e469-448e-bdbc-019171db8d4a",
+        "deck_id": "8b739c90-3e05-4e1d-a82e-48e0ef219dc0",
+        "section": "columna",
+        "cardinality": 427.79,
+        "count": 1,
+        "raw_text": "",
+        "found": false,
+        "printing_specified": false,
+        "finish": false,
+        "card_digest": null
+      },
+      {
+        "object": "deck_entry",
+        "id": "cdd92a12-fbb7-4423-bd6b-00b6d3970bc5",
+        "deck_id": "8b739c90-3e05-4e1d-a82e-48e0ef219dc0",
+        "section": "columna",
+        "cardinality": 428.79,
+        "count": 1,
+        "raw_text": "1 Ball Lightning",
+        "found": true,
+        "printing_specified": true,
+        "finish": "nonfoil",
+        "card_digest": {
+          "object": "card_digest",
+          "id": "3ede7920-e219-4e9d-bfa5-e0f562460914",
+          "oracle_id": "7485cf25-eb41-4397-be13-7f0b8c10c70a",
+          "name": "Ball Lightning",
+          "scryfall_uri": "https://scryfall.com/card/5ed/210/ball-lightning",
+          "mana_cost": "{R}{R}{R}",
+          "type_line": "Creature — Elemental",
+          "collector_number": "210",
+          "set": "5ed",
+          "image_uris": {
+            "front": "https://cards.scryfall.io/large/front/3/e/3ede7920-e219-4e9d-bfa5-e0f562460914.jpg?1562590635"
+          }
+        }
+      },
+      {
+        "object": "deck_entry",
+        "id": "6202d2ad-9be5-4cda-b1b8-0879052c898c",
+        "deck_id": "8b739c90-3e05-4e1d-a82e-48e0ef219dc0",
+        "section": "columna",
+        "cardinality": 429.79,
+        "count": 1,
+        "raw_text": "1 Angelic Voices",
+        "found": true,
+        "printing_specified": true,
+        "finish": "nonfoil",
+        "card_digest": {
+          "object": "card_digest",
+          "id": "03f49b52-05fb-4d5a-a317-9fd89afcaa25",
+          "oracle_id": "3485109b-251f-4bef-a069-308031f47912",
+          "name": "Angelic Voices",
+          "scryfall_uri": "https://scryfall.com/card/me4/3/angelic-voices",
+          "mana_cost": "{2}{W}{W}",
+          "type_line": "Enchantment",
+          "collector_number": "3",
+          "set": "me4",
+          "image_uris": {
+            "front": "https://cards.scryfall.io/large/front/0/3/03f49b52-05fb-4d5a-a317-9fd89afcaa25.jpg?1562896018"
+          }
+        }
+      },
+      {
+        "object": "deck_entry",
+        "id": "e198611b-b68e-4905-b2cc-d4649636c861",
+        "deck_id": "8b739c90-3e05-4e1d-a82e-48e0ef219dc0",
+        "section": "columna",
+        "cardinality": 430.79,
+        "count": 1,
+        "raw_text": "1 Argothian Wurm",
+        "found": true,
+        "printing_specified": true,
+        "finish": "nonfoil",
+        "card_digest": {
+          "object": "card_digest",
+          "id": "93294349-75ae-4a6b-896d-b403a5d69e98",
+          "oracle_id": "f8aa1893-60e5-439e-9316-872a9f6b6c94",
+          "name": "Argothian Wurm",
+          "scryfall_uri": "https://scryfall.com/card/usg/236/argothian-wurm",
+          "mana_cost": "{3}{G}",
+          "type_line": "Creature — Wurm",
+          "collector_number": "236",
+          "set": "usg",
+          "image_uris": {
+            "front": "https://cards.scryfall.io/large/front/9/3/93294349-75ae-4a6b-896d-b403a5d69e98.jpg?1562926099"
+          }
+        }
+      },
+      {
+        "object": "deck_entry",
+        "id": "08b61ad6-4f85-4208-a65b-142bf433b49c",
+        "deck_id": "8b739c90-3e05-4e1d-a82e-48e0ef219dc0",
+        "section": "columna",
+        "cardinality": 431.79,
+        "count": 1,
+        "raw_text": "1 Library of Leng",
+        "found": true,
+        "printing_specified": true,
+        "finish": "nonfoil",
+        "card_digest": {
+          "object": "card_digest",
+          "id": "cfe1d1ae-bcc0-4b0d-a60f-f5ed30184329",
+          "oracle_id": "867def48-4be8-4056-bcf1-d6b00450b9a3",
+          "name": "Library of Leng",
+          "scryfall_uri": "https://scryfall.com/card/5ed/387/library-of-leng",
+          "mana_cost": "{1}",
+          "type_line": "Artifact",
+          "collector_number": "387",
+          "set": "5ed",
+          "image_uris": {
+            "front": "https://cards.scryfall.io/large/front/c/f/cfe1d1ae-bcc0-4b0d-a60f-f5ed30184329.jpg?1562594252"
+          }
+        }
+      },
+      {
+        "object": "deck_entry",
+        "id": "ff0e7cc0-9a97-49b0-ac6b-2dd748f3d311",
+        "deck_id": "8b739c90-3e05-4e1d-a82e-48e0ef219dc0",
+        "section": "columna",
+        "cardinality": 432.79,
+        "count": 1,
+        "raw_text": "1 Counterspell",
+        "found": true,
+        "printing_specified": true,
+        "finish": "nonfoil",
+        "card_digest": {
+          "object": "card_digest",
+          "id": "e8493631-6c9c-40a8-b7de-ecf26ba6bf7d",
+          "oracle_id": "cc187110-1148-4090-bbb8-e205694a39f5",
+          "name": "Counterspell",
+          "scryfall_uri": "https://scryfall.com/card/4ed/65/counterspell",
+          "mana_cost": "{U}{U}",
+          "type_line": "Instant",
+          "collector_number": "65",
+          "set": "4ed",
+          "image_uris": {
+            "front": "https://cards.scryfall.io/large/front/e/8/e8493631-6c9c-40a8-b7de-ecf26ba6bf7d.jpg?1559601564"
+          }
+        }
+      },
+      {
+        "object": "deck_entry",
+        "id": "26ce3950-ca5e-4df0-8994-ba83d38d1eee",
+        "deck_id": "8b739c90-3e05-4e1d-a82e-48e0ef219dc0",
+        "section": "columna",
+        "cardinality": 433.79,
+        "count": 1,
+        "raw_text": "1 Hypnotic Specter",
+        "found": true,
+        "printing_specified": true,
+        "finish": "nonfoil",
+        "card_digest": {
+          "object": "card_digest",
+          "id": "b5900350-be08-4904-8f1b-cc180ed08485",
+          "oracle_id": "759af941-f6a3-4726-91f2-9b1e4e55ea71",
+          "name": "Hypnotic Specter",
+          "scryfall_uri": "https://scryfall.com/card/4ed/142/hypnotic-specter",
+          "mana_cost": "{1}{B}{B}",
+          "type_line": "Creature — Specter",
+          "collector_number": "142",
+          "set": "4ed",
+          "image_uris": {
+            "front": "https://cards.scryfall.io/large/front/b/5/b5900350-be08-4904-8f1b-cc180ed08485.jpg?1591104637"
+          }
+        }
+      }
+    ]
+  }
+}

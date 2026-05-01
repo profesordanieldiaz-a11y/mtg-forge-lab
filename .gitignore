@@ -1,0 +1,28 @@
+# Python
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+*.egg-info/
+dist/
+build/
+
+# Output generado (no subir PDFs ni cartas generadas)
+output/PDF/*.pdf
+output/cartas/
+
+# Datos locales que no son de repositorio
+data/mazo_*.txt
+
+# Windows
+desktop.ini
+Thumbs.db
+
+# VSCode
+.vscode/
+
+# Entornos virtuales
+.env
+venv/
+.venv/

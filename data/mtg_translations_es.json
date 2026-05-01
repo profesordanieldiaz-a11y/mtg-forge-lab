@@ -1,0 +1,290 @@
+{
+  "Mind Twist": {
+    "name_es": "Giro Mental",
+    "type_es": "Conjuro",
+    "text_es": "Un jugador objetivo descarta X cartas al azar.",
+    "mana_cost": "{X}{B}"
+  },
+  "Abandon Hope": {
+    "name_es": "Abandonar la Esperanza",
+    "type_es": "Conjuro",
+    "text_es": "Como costo adicional para lanzar este hechizo, descarta X cartas.\nMira la mano de un jugador objetivo y elige X cartas de ella. Ese jugador descarta esas cartas.",
+    "mana_cost": "{X}{1}{B}"
+  },
+  "Acquisitions Expert": {
+    "name_es": "Experta en Adquisiciones",
+    "type_es": "Criatura — Humano Pícaro",
+    "text_es": "Cuando esta criatura entra al campo de batalla, un jugador objetivo revela un número de cartas de su mano igual al número de criaturas en tu grupo. Tú escoges una de esas cartas. Ese jugador descarta esa carta.",
+    "mana_cost": "{1}{B}"
+  },
+  "Alley Grifters": {
+    "name_es": "Timadores de Callejón",
+    "type_es": "Criatura — Humano Mercenario",
+    "text_es": "Siempre que esta criatura es bloqueada, el jugador que bloquea descarta una carta.",
+    "mana_cost": "{1}{B}{B}"
+  },
+  "Hypnotic Specter": {
+    "name_es": "Espectro Hipnótico",
+    "type_es": "Criatura — Espectro",
+    "text_es": "Vuela.\nSiempre que esta criatura causa daño de combate a un jugador, ese jugador descarta una carta al azar.",
+    "mana_cost": "{1}{B}{B}"
+  },
+  "Cabal Interrogator": {
+    "name_es": "Interrogador de la Cabal",
+    "type_es": "Criatura — Zombi Mago",
+    "text_es": "{X}{B}, {T}: Un jugador objetivo revela X cartas de su mano y tú escoges una de ellas. Ese jugador descarta esa carta.",
+    "mana_cost": "{1}{B}"
+  },
+  "Headhunter": {
+    "name_es": "Cazador de Cabezas",
+    "type_es": "Criatura — Humano Clérigo",
+    "text_es": "Siempre que esta criatura causa daño de combate a un jugador, ese jugador descarta una carta.",
+    "mana_cost": "{1}{B}"
+  },
+  "Cabal Slaver": {
+    "name_es": "Esclavista de la Cabal",
+    "type_es": "Criatura — Humano Clérigo",
+    "text_es": "Siempre que un Goblin causa daño de combate a un jugador, ese jugador descarta una carta.",
+    "mana_cost": "{2}{B}"
+  },
+  "Chilling Apparition": {
+    "name_es": "Aparición Escalofriante",
+    "type_es": "Criatura — Espíritu",
+    "text_es": "{B}: Regenera esta criatura.\nSiempre que esta criatura causa daño de combate a un jugador, ese jugador descarta una carta.",
+    "mana_cost": "{2}{B}"
+  },
+  "Hollow Specter": {
+    "name_es": "Espectro Hueco",
+    "type_es": "Criatura — Espectro",
+    "text_es": "Vuela.\nSiempre que esta criatura causa daño de combate a un jugador, puedes pagar {X}. Si lo haces, ese jugador revela X cartas de su mano y tú escoges una de ellas. Ese jugador descarta esa carta.",
+    "mana_cost": "{1}{B}{B}"
+  },
+  "Unmask": {
+    "name_es": "Desenmascarar",
+    "type_es": "Conjuro",
+    "text_es": "Puedes exiliar una carta negra de tu mano en lugar de pagar el costo de maná de este hechizo.\nUn jugador objetivo revela su mano. Tú escoges una carta que no es tierra de ella. Ese jugador descarta esa carta.",
+    "mana_cost": "{3}{B}"
+  },
+  "Silent Specter": {
+    "name_es": "Espectro Silencioso",
+    "type_es": "Criatura — Espectro",
+    "text_es": "Vuela.\nSiempre que esta criatura causa daño de combate a un jugador, ese jugador descarta dos cartas.\nMorph {3}{B}{B}",
+    "mana_cost": "{4}{B}{B}"
+  },
+  "Dark Ritual": {
+    "name_es": "Ritual Oscuro",
+    "type_es": "Instantáneo",
+    "text_es": "Agrega {B}{B}{B} a tu reserva de maná.",
+    "mana_cost": "{B}"
+  },
+  "Ball Lightning": {
+    "name_es": "Rayo Esférico",
+    "type_es": "Criatura — Elemental",
+    "text_es": "Prisa.\nPisoteo.\nAl comienzo del paso final, sacrifica Rayo Esférico.",
+    "mana_cost": "{R}{R}{R}"
+  },
+  "Angelic Voices": {
+    "name_es": "Voces Angélicas",
+    "type_es": "Encantamiento",
+    "text_es": "Las criaturas que controlas obtienen +1/+1 siempre que no controles criaturas que no sean blancas ni artefactos.",
+    "mana_cost": "{2}{W}{W}"
+  },
+  "Argothian Wurm": {
+    "name_es": "Sierpe Argothiana",
+    "type_es": "Criatura — Sierpe",
+    "text_es": "Pisoteo.\nCuando esta criatura entra al campo de batalla, cualquier jugador puede sacrificar un terreno. Si alguno lo hace, regresa Sierpe Argothiana a la mano de su propietario.",
+    "mana_cost": "{3}{G}"
+  },
+  "Library of Leng": {
+    "name_es": "Biblioteca de Leng",
+    "type_es": "Artefacto",
+    "text_es": "No tienes límite de mano máxima.\nSiempre que descartes una carta, puedes ponerla en la cima de tu biblioteca en lugar de en tu cementerio.",
+    "mana_cost": "{1}"
+  },
+  "Counterspell": {
+    "name_es": "Contrahechizo",
+    "type_es": "Instantáneo",
+    "text_es": "Contrarresta el hechizo objetivo.",
+    "mana_cost": "{U}{U}"
+  },
+  "Allosaurus Shepherd": {
+    "name_es": "Allosaurus Shepherd",
+    "type_es": "Criatura — Elfo Chamán",
+    "text_es": "Este hechizo no se puede contrarrestar.\nLos hechizos verdes que controlas no pueden ser contrarrestados.\n{4}{G}{G}: Hasta el final del turno, cada criatura Elfa que controlas tiene fuerza y ​​resistencia base 5/5 y se convierte en un Dinosaurio además de sus otros tipos de criaturas.",
+    "mana_cost": "{G}"
+  },
+  "Beast Within": {
+    "name_es": "Beast Within",
+    "type_es": "Instantáneo",
+    "text_es": "Destruye el objetivo de forma permanente. Su controlador crea una ficha de criatura Bestia verde 3/3.",
+    "mana_cost": "{2}{G}"
+  },
+  "Collected Company": {
+    "name_es": "Collected Company",
+    "type_es": "Instantáneo",
+    "text_es": "Mira las seis primeras cartas de tu biblioteca. Pon hasta dos cartas de criatura con valor de maná 3 o menos de entre ellas en el campo de batalla. Coloque el resto en el fondo de su biblioteca en cualquier orden.",
+    "mana_cost": "{3}{G}"
+  },
+  "Door of Destinies": {
+    "name_es": "Door of Destinies",
+    "type_es": "Artefacto",
+    "text_es": "Cuando entre este artefacto, elige un tipo de criatura.\nSiempre que lances un hechizo del tipo elegido, pon un contador de carga sobre este artefacto.\nLas criaturas que controlas del tipo elegido obtienen +1/+1 por cada contador de carga en este artefacto.",
+    "mana_cost": "{4}"
+  },
+  "Doubling Season": {
+    "name_es": "Doubling Season",
+    "type_es": "Encantamiento",
+    "text_es": "Si un efecto creara una o más fichas bajo tu control, en su lugar crea el doble de esas fichas.\nSi un efecto fuera a poner uno o más contadores en un permanente que controlas, en su lugar, pone el doble de esos contadores en ese permanente.",
+    "mana_cost": "{4}{G}"
+  },
+  "Elvish Archdruid": {
+    "name_es": "Elvish Archdruid",
+    "type_es": "Criatura — Elfo Druida",
+    "text_es": "Otras criaturas Elfas que controlas obtienen +1/+1.\n{T}: Agrega {G} por cada Elfo que controles.",
+    "mana_cost": "{1}{G}{G}"
+  },
+  "Elvish Promenade": {
+    "name_es": "Elvish Promenade",
+    "type_es": "Kindred Conjuro — Elfo",
+    "text_es": "Crea una ficha de criatura Guerrero Elfo verde 1/1 por cada Elfo que controlas.",
+    "mana_cost": "{3}{G}"
+  },
+  "Elvish Warmaster": {
+    "name_es": "Elvish Warmaster",
+    "type_es": "Criatura — Elfo Guerrero",
+    "text_es": "Siempre que entren uno o más Elfos que controles, crea una ficha de criatura Guerrero Elfo verde 1/1. Esta habilidad se activa solo una vez por turno.\n{5}{G}{G}: Los elfos que controlas obtienen +2/+2 y ganan toque mortal hasta el final del turno.",
+    "mana_cost": "{1}{G}"
+  },
+  "Ezuri, Renegade Leader": {
+    "name_es": "Ezuri, Renegade Leader",
+    "type_es": "Legendaria Criatura — Elfo Guerrero",
+    "text_es": "{G}: Regenera otro Elfo objetivo.\n{2}{G}{G}{G}: Las criaturas elfas que controlas obtienen +3/+3 y ganan arrollar hasta el final del turno.",
+    "mana_cost": "{1}{G}{G}"
+  },
+  "Galadhrim Brigade": {
+    "name_es": "Galadhrim Brigade",
+    "type_es": "Criatura — Elfo Soldado",
+    "text_es": "Escuadrón {1}{G} (Como costo adicional para lanzar este hechizo, puedes pagar {1}{G} cualquier número de veces. Cuando esta criatura entre, crea esa cantidad de fichas que sean copias de ella).\nOtros Elfos que controlas obtienen +1/+1.",
+    "mana_cost": "{2}{G}"
+  },
+  "Leaf-Crowned Visionary": {
+    "name_es": "Leaf-Crowned Visionary",
+    "type_es": "Criatura — Elfo Druida",
+    "text_es": "Otros Elfos que controlas obtienen +1/+1.\nCada vez que lanzas un hechizo de Elfo, puedes pagar {G}. Si lo haces, roba una carta.",
+    "mana_cost": "{G}{G}"
+  },
+  "Llanowar Elves": {
+    "name_es": "Llanowar Elves",
+    "type_es": "Criatura — Elfo Druida",
+    "text_es": "{T}: Agregue {G}.",
+    "mana_cost": "{G}"
+  },
+  "Priest of Titania": {
+    "name_es": "Priest of Titania",
+    "type_es": "Criatura — Elfo Druida",
+    "text_es": "{T}: Agrega {G} por cada Elfo en el campo de batalla.",
+    "mana_cost": "{1}{G}"
+  },
+  "Primal Command": {
+    "name_es": "Primal Command",
+    "type_es": "Conjuro",
+    "text_es": "Elige dos -\n• El jugador objetivo gana 7 vidas.\n• Coloca el permanente objetivo que no sea criatura en la parte superior de la biblioteca de su propietario.\n• El jugador objetivo baraja su cementerio en su biblioteca.\n• Busca en tu biblioteca una carta de criatura, muéstrala, ponla en tu mano y luego baraja.",
+    "mana_cost": "{3}{G}{G}"
+  },
+  "Rhys the Redeemed": {
+    "name_es": "Rhys the Redeemed",
+    "type_es": "Legendaria Criatura — Elfo Guerrero",
+    "text_es": "{2}{G/W}, {T}: Crea una ficha de criatura Guerrero Elfo verde y blanca 1/1.\n{4}{G/W}{G/W}, {T}: Por cada ficha de criatura que controles, crea una ficha que sea una copia de esa criatura.",
+    "mana_cost": "{G/W}"
+  },
+  "Triumph of the Hordes": {
+    "name_es": "Triumph of the Hordes",
+    "type_es": "Conjuro",
+    "text_es": "Hasta el final del turno, las criaturas que controlas obtienen +1/+1 y obtienen arrollar e infectar. (Las criaturas con infección causan daño a las criaturas en forma de contadores -1/-1 y a los jugadores en forma de contadores de veneno).",
+    "mana_cost": "{2}{G}{G}"
+  },
+  "Wellwisher": {
+    "name_es": "Wellwisher",
+    "type_es": "Criatura — Elfo",
+    "text_es": "{T}: Obtienes 1 vida por cada Elfo en el campo de batalla.",
+    "mana_cost": "{1}{G}"
+  },
+  "Wirewood Lodge": {
+    "name_es": "Wirewood Lodge",
+    "type_es": "",
+    "text_es": "",
+    "mana_cost": ""
+  },
+  "Hymn to Tourach": {
+    "name_es": "Hymn to Tourach",
+    "type_es": "Conjuro",
+    "text_es": "El jugador objetivo descarta dos cartas al azar.",
+    "mana_cost": "{B}{B}"
+  },
+  "The Rack": {
+    "name_es": "The Rack",
+    "type_es": "Artefacto",
+    "text_es": "Cuando entre este artefacto, elige un oponente.\nAl comienzo del mantenimiento del jugador elegido, este artefacto causa X daño a ese jugador, donde X es 3 menos la cantidad de cartas en su mano.",
+    "mana_cost": "{1}"
+  },
+  "Disrupting Scepter": {
+    "name_es": "Disrupting Scepter",
+    "type_es": "Artefacto",
+    "text_es": "{3}, {T}: el jugador objetivo descarta una carta. Actívalo solo durante tu turno.",
+    "mana_cost": "{3}"
+  },
+  "Demonic Tutor": {
+    "name_es": "Demonic Tutor",
+    "type_es": "Conjuro",
+    "text_es": "Busca una carta en tu biblioteca, pon esa carta en tu mano y luego baraja.",
+    "mana_cost": "{1}{B}"
+  },
+  "Sinkhole": {
+    "name_es": "Sinkhole",
+    "type_es": "Conjuro",
+    "text_es": "Destruye la tierra objetivo.",
+    "mana_cost": "{B}{B}"
+  },
+  "Nether Void": {
+    "name_es": "Nether Void",
+    "type_es": "Mundial Encantamiento",
+    "text_es": "Siempre que un jugador lance un hechizo, contraréstalo a menos que ese jugador pague {3}.",
+    "mana_cost": "{3}{B}"
+  },
+  "Black Knight": {
+    "name_es": "Black Knight",
+    "type_es": "Criatura — Humano Caballero",
+    "text_es": "Primer golpe (Esta criatura hace daño de combate antes que las criaturas sin primer golpe).\nProtección contra el blanco (Esta criatura no puede ser bloqueada, apuntada, infligida daño ni encantada por nada blanco).",
+    "mana_cost": "{B}{B}"
+  },
+  "Order of the Ebon Hand": {
+    "name_es": "Order of the Ebon Hand",
+    "type_es": "Criatura — Clérigo Caballero",
+    "text_es": "Protección contra el blanco\n{B}: Esta criatura gana el primer daño hasta el final del turno.\n{B}{B}: Esta criatura obtiene +1/+0 hasta el final del turno.",
+    "mana_cost": "{B}{B}"
+  },
+  "Erg Raiders": {
+    "name_es": "Erg Raiders",
+    "type_es": "Criatura — Humano Guerrero",
+    "text_es": "Al comienzo de tu paso final, si esta criatura no atacó este turno, te hace 2 daños a menos que quede bajo tu control este turno.",
+    "mana_cost": "{1}{B}"
+  },
+  "Strip Mine": {
+    "name_es": "Strip Mine",
+    "type_es": "",
+    "text_es": "",
+    "mana_cost": ""
+  },
+  "Maze of Ith": {
+    "name_es": "Maze of Ith",
+    "type_es": "",
+    "text_es": "",
+    "mana_cost": ""
+  },
+  "Swamp": {
+    "name_es": "Swamp",
+    "type_es": "",
+    "text_es": "",
+    "mana_cost": ""
+  }
+}
