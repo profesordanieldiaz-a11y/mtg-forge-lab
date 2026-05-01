@@ -256,6 +256,42 @@ STAPLES = {
 SCRYFALL_BASE = "https://api.scryfall.com"
 _cache_scryfall: dict = {}
 
+# --- BASE DE DATOS LOCAL -------------------------------------------------------
+
+SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
+DATA_DIR   = os.path.join(SCRIPT_DIR, "data")
+
+_DB_FILES = {
+    "old_school": os.path.join(DATA_DIR, "cards_old_school.json"),
+    "mid_school": os.path.join(DATA_DIR, "cards_mid_school.json"),
+    "ambos":      os.path.join(DATA_DIR, "cards_all_eras.json"),
+    "all":        os.path.join(DATA_DIR, "cards_all_eras.json"),
+}
+
+_db_local_cache: dict = {}
+
+
+def _cargar_db_local(era_key: str) -> list:
+    if era_key in _db_local_cache:
+        return _db_local_cache[era_key]
+    path = _DB_FILES.get(era_key, _DB_FILES["all"])
+    if not os.path.exists(path):
+        _db_local_cache[era_key] = []
+        return []
+    with open(path, encoding="utf-8") as f:
+        db = json.load(f)
+    _db_local_cache[era_key] = db
+    return db
+
+
+def _buscar_en_db_local(name: str, era_key: str = "all"):
+    db = _cargar_db_local(era_key)
+    nombre_lower = name.lower()
+    for carta in db:
+        if carta.get("name", "").lower() == nombre_lower:
+            return carta
+    return None
+
 
 def _request_with_backoff(url: str, params: dict = None, max_retries: int = 5):
     """Hace una request con backoff exponencial ante 429."""
