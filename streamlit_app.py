@@ -5,6 +5,7 @@ import subprocess
 import sys
 from deck_builder import ERAS, STAPLES, construir_mazo, a_moxfield
 from translator import translate_and_update_json
+from download_card_database import cargar_db, buscar_por_keyword
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR   = os.path.join(SCRIPT_DIR, "data")
@@ -165,3 +166,75 @@ with st.expander("🛠️ Consola de Sistema / Estado"):
 
 st.sidebar.markdown("---")
 st.sidebar.caption("Creado con la Plantilla OGR para GaiteroDade")
+
+st.divider()
+
+# ════════════════════════════════════════════════════════════════
+# SECCIÓN 3 — Base de Datos Local
+# ════════════════════════════════════════════════════════════════
+st.subheader("🗄️ Base de Datos Local de Cartas")
+
+path_all = os.path.join(DATA_DIR, "cards_all_eras.json")
+db_existe = os.path.exists(path_all)
+
+col_db1, col_db2 = st.columns([2, 1])
+with col_db1:
+    if db_existe:
+        db = cargar_db(path_all)
+        st.success(f"Base local activa: **{len(db):,} cartas** (Old School + Mid School)")
+    else:
+        st.warning("No hay base local. Descárgala para búsquedas instantáneas sin depender de la API.")
+
+with col_db2:
+    if st.button("⬇️ Descargar / Actualizar Base"):
+        descargador = os.path.join(SCRIPT_DIR, "download_card_database.py")
+        with st.spinner("Descargando de Scryfall... (1-2 minutos)"):
+            resultado = subprocess.run(
+                [sys.executable, descargador],
+                input="s\n",
+                capture_output=True, text=True, encoding="utf-8", errors="replace"
+            )
+        if resultado.returncode == 0:
+            st.success("✅ Base descargada correctamente.")
+            st.rerun()
+        else:
+            st.error("❌ Error durante la descarga.")
+            st.text(resultado.stderr)
+
+# ─── Buscador por keyword ─────────────────────────────────────
+if db_existe:
+    st.markdown("#### 🔍 Buscar cartas por palabra clave")
+
+    col_b1, col_b2 = st.columns([3, 1])
+    with col_b1:
+        keyword = st.text_input("Buscar en nombre, tipo o texto de reglas:", placeholder="ej: discard, flying, goblin, destroy...")
+    with col_b2:
+        era_filtro = st.selectbox("Era", ["Todas", "Old School", "Mid School"])
+
+    if keyword:
+        path_map = {
+            "Todas":      path_all,
+            "Old School": os.path.join(DATA_DIR, "cards_old_school.json"),
+            "Mid School": os.path.join(DATA_DIR, "cards_mid_school.json"),
+        }
+        db_busqueda = cargar_db(path_map[era_filtro])
+        resultados = buscar_por_keyword(keyword, db_busqueda)
+
+        if resultados:
+            st.write(f"**{len(resultados)} cartas encontradas:**")
+            datos_tabla = [
+                {
+                    "Nombre":  c.get("name", ""),
+                    "Maná":    c.get("mana_cost", ""),
+                    "Tipo":    c.get("type_line", ""),
+                    "Set":     (c.get("set") or "").upper(),
+                    "Rareza":  c.get("rarity", ""),
+                    "Texto":   (c.get("oracle_text") or "")[:80] + ("..." if len(c.get("oracle_text") or "") > 80 else ""),
+                }
+                for c in resultados[:100]
+            ]
+            st.dataframe(datos_tabla, use_container_width=True)
+            if len(resultados) > 100:
+                st.caption(f"Mostrando 100 de {len(resultados)} resultados. Refina la búsqueda.")
+        else:
+            st.info(f"No se encontraron cartas con '{keyword}' en {era_filtro}.")
