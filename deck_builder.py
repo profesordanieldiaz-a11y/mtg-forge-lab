@@ -16,7 +16,7 @@ import sys
 import argparse
 import os
 import subprocess
-from typing import List, Dict, Optional, Tuple
+from typing import Optional
 from collections import defaultdict
 
 # Forzar UTF-8 en stdout para Windows
@@ -25,9 +25,9 @@ if hasattr(sys.stdout, "reconfigure"):
 
 # --- BASE DE DATOS LOCAL -------------------------------------------------------
 
-_DB_LOCAL: Dict[str, List[Dict]] = {}  # cache en memoria: "old_school" | "mid_school" | "all"
+_DB_LOCAL: dict = {}  # cache en memoria: "old_school" | "mid_school" | "all"
 
-def _cargar_db_local(era_key: str = "all") -> List[Dict]:
+def _cargar_db_local(era_key: str = "all") -> list:
     """Carga la base local de cartas si existe. Devuelve [] si no hay archivo."""
     if era_key in _DB_LOCAL:
         return _DB_LOCAL[era_key]
@@ -50,7 +50,7 @@ def _cargar_db_local(era_key: str = "all") -> List[Dict]:
     return db
 
 
-def _buscar_en_db_local(nombre: str, era_key: str) -> Optional[Dict]:
+def _buscar_en_db_local(nombre: str, era_key: str) -> Optional[dict]:
     """Busca una carta por nombre exacto en la base local."""
     db = _cargar_db_local(era_key)
     nombre_lower = nombre.lower()
@@ -289,10 +289,10 @@ STAPLES = {
 # --- SCRYFALL API -------------------------------------------------------------
 
 SCRYFALL_BASE = "https://api.scryfall.com"
-_cache_scryfall: Dict[str, Optional[Dict]] = {}
+_cache_scryfall: dict = {}
 
 
-def _request_with_backoff(url: str, params: dict = None, max_retries: int = 5) -> Optional[requests.Response]:
+def _request_with_backoff(url: str, params: dict = None, max_retries: int = 5):
     """Hace una request con backoff exponencial ante 429."""
     delay = 0.2
     for attempt in range(max_retries):
@@ -312,7 +312,7 @@ def _request_with_backoff(url: str, params: dict = None, max_retries: int = 5) -
     return None
 
 
-def _get_card_scryfall(name: str, era_sets: List[str] = None, era_key: str = "all") -> Optional[Dict]:
+def _get_card_scryfall(name: str, era_sets: list = None, era_key: str = "all") -> Optional[dict]:
     """
     Busca una carta. Prioridad:
       1. Base de datos local (instantáneo, sin API)
@@ -356,7 +356,7 @@ def _get_card_scryfall(name: str, era_sets: List[str] = None, era_key: str = "al
     return None
 
 
-def _scryfall_search(query: str, max_results: int = 30) -> List[Dict]:
+def _scryfall_search(query: str, max_results: int = 30) -> list:
     """Busca cartas en Scryfall con query avanzada."""
     cards = []
     url = f"{SCRYFALL_BASE}/cards/search"
@@ -382,7 +382,7 @@ def _scryfall_search(query: str, max_results: int = 30) -> List[Dict]:
     return cards[:max_results]
 
 
-def _buscar_cartas_adicionales(arquetipo_key: str, era: Dict, cantidad_faltante: int) -> List[Tuple[str, int, Dict]]:
+def _buscar_cartas_adicionales(arquetipo_key: str, era: dict, cantidad_faltante: int) -> list:
     """Busca cartas adicionales en Scryfall para completar el mazo."""
     filtro_era = era["filtro_scryfall"]
     consultas_por_arquetipo = {
@@ -426,7 +426,7 @@ def _buscar_cartas_adicionales(arquetipo_key: str, era: Dict, cantidad_faltante:
 
 # --- CONSTRUCCIÓN DEL MAZO ----------------------------------------------------
 
-def construir_mazo(arquetipo_key: str, era_key: str) -> Dict:
+def construir_mazo(arquetipo_key: str, era_key: str) -> dict:
     """Construye un mazo completo de 60 cartas para el arquetipo y era dados."""
     era = ERAS[era_key]
     era_sets = era["sets"]
@@ -609,7 +609,7 @@ def construir_mazo(arquetipo_key: str, era_key: str) -> Dict:
 
 # --- FORMATEO DE SALIDA -------------------------------------------------------
 
-def a_moxfield(mazo: Dict) -> str:
+def a_moxfield(mazo: dict) -> str:
     """Genera lista en formato Moxfield compatible con card_list_parser.py."""
     lineas = []
     lineas.append(f"// Mazo: {mazo['arquetipo'].upper().replace('_', ' ')} -- {mazo['era_nombre']}")
@@ -636,7 +636,7 @@ def a_moxfield(mazo: Dict) -> str:
     return "\n".join(lineas)
 
 
-def imprimir_resumen(mazo: Dict):
+def imprimir_resumen(mazo: dict):
     """Imprime resumen del mazo con curva de maná."""
     print(f"\n{'='*60}")
     print(f"  MAZO FINAL -- {mazo['arquetipo'].upper().replace('_',' ')} ({mazo['era_nombre']})")

@@ -17,7 +17,7 @@ import os
 import sys
 import time
 import requests
-from typing import List, Dict, Optional
+from typing import Optional
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR   = os.path.join(SCRIPT_DIR, "data")
@@ -125,7 +125,7 @@ def filtrar_por_era(todas: list, sets_era: set) -> list:
 
 # ─── Búsqueda local ───────────────────────────────────────────────────────────
 
-def buscar_en_db(nombre: str, db: List[Dict], exacto: bool = True) -> Optional[Dict]:
+def buscar_en_db(nombre: str, db: list, exacto: bool = True) -> Optional[dict]:
     """
     Busca una carta en la base local.
     exacto=True  → coincidencia exacta de nombre (insensible a mayúsculas)
@@ -144,7 +144,7 @@ def buscar_en_db(nombre: str, db: List[Dict], exacto: bool = True) -> Optional[D
     return None
 
 
-def buscar_por_keyword(keyword: str, db: List[Dict]) -> List[Dict]:
+def buscar_por_keyword(keyword: str, db: list) -> list:
     """
     Busca cartas cuyo oracle_text, nombre o tipo contenga el keyword.
     Devuelve lista ordenada por nombre.
@@ -169,7 +169,7 @@ def guardar_json(cartas: list, path: str):
     print(f"  Guardado: {path} ({len(cartas)} cartas, {size_kb:.0f} KB)")
 
 
-def cargar_db(path: str) -> List[Dict]:
+def cargar_db(path: str) -> list:
     """Carga la base de datos local. Devuelve lista vacía si no existe."""
     if not os.path.exists(path):
         return []

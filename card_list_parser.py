@@ -14,7 +14,7 @@ Retorna una lista normalizada de entradas:
 """
 
 import re
-from typing import List, Optional
+from typing import Optional
 
 # ─── Patrones ────────────────────────────────────────────────────────────────
 
@@ -66,7 +66,7 @@ def detect_format(text: str) -> str:
 
 # ─── Parser principal ────────────────────────────────────────────────────────
 
-def parse_card_list(text: str) -> List[dict]:
+def parse_card_list(text: str) -> list:
     """
     Parsea el texto de una lista de cartas y devuelve entradas normalizadas.
     Detecta automáticamente el formato.
@@ -158,14 +158,14 @@ def _clean_name(raw: str) -> str:
 
 # ─── Carga desde archivo ──────────────────────────────────────────────────────
 
-def load_card_list_file(path: str) -> List[dict]:
+def load_card_list_file(path: str) -> list:
     with open(path, encoding="utf-8") as f:
         return parse_card_list(f.read())
 
 
 # ─── Carga desde clipboard ────────────────────────────────────────────────────
 
-def load_card_list_clipboard() -> List[dict]:
+def load_card_list_clipboard() -> list:
     try:
         import tkinter as tk
         root = tk.Tk()
