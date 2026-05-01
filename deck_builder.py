@@ -293,6 +293,23 @@ def _buscar_en_db_local(name: str, era_key: str = "all"):
     return None
 
 
+def buscar_cartas_db(query: str, era_key: str = "ambos", max_results: int = 50) -> list:
+    """Búsqueda parcial en la DB local por nombre, tipo u oracle text."""
+    db = _cargar_db_local(era_key)
+    q = query.lower().strip()
+    if not q:
+        return []
+    resultados = []
+    for carta in db:
+        if (q in carta.get("name", "").lower() or
+                q in carta.get("type_line", "").lower() or
+                q in (carta.get("oracle_text") or "").lower()):
+            resultados.append(carta)
+            if len(resultados) >= max_results:
+                break
+    return resultados
+
+
 def _request_with_backoff(url: str, params: dict = None, max_retries: int = 5):
     """Hace una request con backoff exponencial ante 429."""
     delay = 0.2
