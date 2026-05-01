@@ -193,7 +193,7 @@ def _gt_translate(text: str) -> str:
 
 
 # ─── Scryfall en español ──────────────────────────────────────────────────────
-def _fetch_scryfall_es(name: str) -> dict | None:
+def _fetch_scryfall_es(name: str):
     """Intenta obtener la carta en español desde Scryfall."""
     url = f"https://api.scryfall.com/cards/named?exact={requests.utils.quote(name)}&lang=es"
     try:

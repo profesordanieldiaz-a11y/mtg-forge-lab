@@ -6,8 +6,8 @@ Retorna una lista normalizada de entradas:
     {
         "name": str,
         "count": int,
-        "set_code": str | None,
-        "collector_number": str | None,
+        "set_code": "str or None",
+        "collector_number": "str or None",
         "foil": bool,
         "section": "mainboard" | "sideboard"
     }
