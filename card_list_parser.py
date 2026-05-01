@@ -14,7 +14,6 @@ Retorna una lista normalizada de entradas:
 """
 
 import re
-from typing import Optional
 
 # ─── Patrones ────────────────────────────────────────────────────────────────
 
@@ -104,7 +103,7 @@ def parse_card_list(text: str) -> list:
     return entries
 
 
-def _parse_line(line: str, fmt: str, section: str) -> Optional[dict]:
+def _parse_line(line: str, fmt: str, section: str):
     """Intenta parsear una línea según el formato detectado."""
 
     # Intentar Moxfield/Arena primero (más específico)

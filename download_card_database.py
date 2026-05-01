@@ -17,7 +17,6 @@ import os
 import sys
 import time
 import requests
-from typing import Optional
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR   = os.path.join(SCRIPT_DIR, "data")
@@ -125,7 +124,7 @@ def filtrar_por_era(todas: list, sets_era: set) -> list:
 
 # ─── Búsqueda local ───────────────────────────────────────────────────────────
 
-def buscar_en_db(nombre: str, db: list, exacto: bool = True) -> Optional[dict]:
+def buscar_en_db(nombre: str, db: list, exacto: bool = True):
     """
     Busca una carta en la base local.
     exacto=True  → coincidencia exacta de nombre (insensible a mayúsculas)

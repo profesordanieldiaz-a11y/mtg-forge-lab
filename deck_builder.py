@@ -16,48 +16,13 @@ import sys
 import argparse
 import os
 import subprocess
-from typing import Optional
 from collections import defaultdict
 
-# Forzar UTF-8 en stdout para Windows
-if hasattr(sys.stdout, "reconfigure"):
-    sys.stdout.reconfigure(encoding="utf-8", errors="replace")
-
-# --- BASE DE DATOS LOCAL -------------------------------------------------------
-
-_DB_LOCAL: dict = {}  # cache en memoria: "old_school" | "mid_school" | "all"
-
-def _cargar_db_local(era_key: str = "all") -> list:
-    """Carga la base local de cartas si existe. Devuelve [] si no hay archivo."""
-    if era_key in _DB_LOCAL:
-        return _DB_LOCAL[era_key]
-
-    script_dir = os.path.dirname(os.path.abspath(__file__))
-    nombres = {
-        "old_school": "cards_old_school.json",
-        "mid_school": "cards_mid_school.json",
-        "all":        "cards_all_eras.json",
-        "ambos":      "cards_all_eras.json",
-    }
-    path = os.path.join(script_dir, "data", nombres.get(era_key, "cards_all_eras.json"))
-
-    if not os.path.exists(path):
-        return []
-
-    with open(path, encoding="utf-8") as f:
-        db = json.load(f)
-    _DB_LOCAL[era_key] = db
-    return db
-
-
-def _buscar_en_db_local(nombre: str, era_key: str) -> Optional[dict]:
-    """Busca una carta por nombre exacto en la base local."""
-    db = _cargar_db_local(era_key)
-    nombre_lower = nombre.lower()
-    for carta in db:
-        if carta.get("name", "").lower() == nombre_lower:
-            return carta
-    return None
+try:
+    if hasattr(sys.stdout, "reconfigure"):
+        sys.stdout.reconfigure(encoding="utf-8", errors="replace")
+except Exception:
+    pass
 
 # --- DEFINICIÓN DE ERAS -------------------------------------------------------
 
@@ -312,7 +277,7 @@ def _request_with_backoff(url: str, params: dict = None, max_retries: int = 5):
     return None
 
 
-def _get_card_scryfall(name: str, era_sets: list = None, era_key: str = "all") -> Optional[dict]:
+def _get_card_scryfall(name: str, era_sets: list = None, era_key: str = "all"):
     """
     Busca una carta. Prioridad:
       1. Base de datos local (instantáneo, sin API)
