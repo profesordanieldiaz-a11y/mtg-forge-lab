@@ -14,6 +14,7 @@ Retorna una lista normalizada de entradas:
 """
 
 import re
+from typing import List, Optional
 
 # ─── Patrones ────────────────────────────────────────────────────────────────
 
@@ -65,7 +66,7 @@ def detect_format(text: str) -> str:
 
 # ─── Parser principal ────────────────────────────────────────────────────────
 
-def parse_card_list(text: str) -> list[dict]:
+def parse_card_list(text: str) -> List[dict]:
     """
     Parsea el texto de una lista de cartas y devuelve entradas normalizadas.
     Detecta automáticamente el formato.
@@ -103,7 +104,7 @@ def parse_card_list(text: str) -> list[dict]:
     return entries
 
 
-def _parse_line(line: str, fmt: str, section: str) -> dict | None:
+def _parse_line(line: str, fmt: str, section: str) -> Optional[dict]:
     """Intenta parsear una línea según el formato detectado."""
 
     # Intentar Moxfield/Arena primero (más específico)
@@ -157,14 +158,14 @@ def _clean_name(raw: str) -> str:
 
 # ─── Carga desde archivo ──────────────────────────────────────────────────────
 
-def load_card_list_file(path: str) -> list[dict]:
+def load_card_list_file(path: str) -> List[dict]:
     with open(path, encoding="utf-8") as f:
         return parse_card_list(f.read())
 
 
 # ─── Carga desde clipboard ────────────────────────────────────────────────────
 
-def load_card_list_clipboard() -> list[dict]:
+def load_card_list_clipboard() -> List[dict]:
     try:
         import tkinter as tk
         root = tk.Tk()
