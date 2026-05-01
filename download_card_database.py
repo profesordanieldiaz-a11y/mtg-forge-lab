@@ -52,8 +52,9 @@ def obtener_url_bulk() -> str:
     resp.raise_for_status()
     for item in resp.json()["data"]:
         if item["type"] == "default_cards":
-            size_mb = item["compressed_size"] / 1024 / 1024
-            print(f"  Archivo: {item['name']} ({size_mb:.0f} MB comprimido)")
+            size = item.get("compressed_size") or item.get("size") or 0
+            size_mb = size / 1024 / 1024
+            print(f"  Archivo: {item['name']} ({size_mb:.0f} MB)")
             return item["download_uri"]
     raise RuntimeError("No se encontró el bulk data 'default_cards' en Scryfall.")
 
