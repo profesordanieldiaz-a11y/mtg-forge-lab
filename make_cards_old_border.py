@@ -175,12 +175,38 @@ def _folder_color(mana_str: str, is_land: bool = False) -> str:
 # ─────────────────────────────────────────────────────────────
 # FUENTES
 # ─────────────────────────────────────────────────────────────
+def _find_font(*candidates):
+    for p in candidates:
+        if p and os.path.exists(p):
+            return p
+    return candidates[0]
+
 _FP = {
-    "bold": "C:/Windows/Fonts/arialbd.ttf",
-    "reg":  "C:/Windows/Fonts/arial.ttf",
-    "srf":  "C:/Windows/Fonts/georgia.ttf",
-    "srfb": "C:/Windows/Fonts/georgiab.ttf",
-    "srfi": "C:/Windows/Fonts/georgiai.ttf",
+    "bold": _find_font(
+        "C:/Windows/Fonts/arialbd.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
+    ),
+    "reg": _find_font(
+        "C:/Windows/Fonts/arial.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
+    ),
+    "srf": _find_font(
+        "C:/Windows/Fonts/georgia.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf",
+    ),
+    "srfb": _find_font(
+        "C:/Windows/Fonts/georgiab.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf",
+    ),
+    "srfi": _find_font(
+        "C:/Windows/Fonts/georgiai.ttf",
+        "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Italic.ttf",
+        "/usr/share/fonts/truetype/liberation/LiberationSerif-Italic.ttf",
+    ),
 }
 
 def fnt(style: str, size: int) -> ImageFont.FreeTypeFont:
