@@ -228,7 +228,7 @@ def fit_font(text: str, style: str, max_size: int, min_size: int, max_w: int):
 def total_lines_height(lines, lh_full, lh_blank):
     return sum(lh_blank if l is None else lh_full for l in lines)
 
-def autofit_body(text: str, box_h: int, max_w: int, max_size: int = 23, min_size: int = 11):
+def autofit_body(text: str, box_h: int, max_w: int, max_size: int = 30, min_size: int = 11):
     """Elige el tamaño mas grande que cabe en box_h, arrancando en 23pt."""
     for size in range(max_size, min_size - 1, -1):
         f   = fnt("srf", size)
