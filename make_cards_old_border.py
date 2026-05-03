@@ -500,6 +500,8 @@ def main():
                     help="Lista de cartas (.txt Moxfield, .json Scryfall) o 'clipboard'")
     ap.add_argument("--limit", "-n", type=int, metavar="N",
                     help="Limitar a las primeras N cartas (útil para pruebas)")
+    ap.add_argument("--force", "-f", action="store_true",
+                    help="Regenerar imágenes aunque ya existan en caché")
     # Compatibilidad: primer argumento posicional sin flag
     ap.add_argument("input_pos", nargs="?", metavar="ARCHIVO_POS", help=argparse.SUPPRESS)
     args = ap.parse_args()
@@ -647,7 +649,7 @@ def main():
         fcolor = _folder_color(info["tr"].get("mana_cost", ""), info["is_land"])
         safe   = name.replace(" ", "_").replace("/", "-")
         out    = os.path.join(CARTAS_DIR, fcolor, f"{safe}.png")
-        if os.path.exists(out):
+        if os.path.exists(out) and not args.force:
             print(f"  [{idx}/{len(order)}] {name}  [cache] -> cartas/{fcolor}/")
         else:
             print(f"\n  [{idx}/{len(order)}] {name}  -> cartas/{fcolor}/")
