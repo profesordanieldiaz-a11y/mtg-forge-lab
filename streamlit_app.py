@@ -42,20 +42,70 @@ def mana_html(cost: str) -> str:
     return "".join(icons)
 
 
+_ES_EN = {
+    "vuela": "flying",     "volar": "flying",    "volador": "flying",  "vuelo": "flying",
+    "arrolla": "trample",  "arrollar": "trample",
+    "prisa": "haste",
+    "vigilancia": "vigilance",
+    "toque letal": "deathtouch",
+    "vínculo vital": "lifelink",
+    "indestructible": "indestructible",
+    "alcance": "reach",
+    "amenaza": "menace",
+    "fulgor": "flash",
+    "protección total": "hexproof",
+    "velo": "shroud",
+    "proliferar": "proliferate",
+    "memoria": "flashback",
+    "destruye": "destroy",   "destruir": "destroy",   "destrucción": "destroy",
+    "destierra": "exile",    "desterrar": "exile",    "exilia": "exile",
+    "descarta": "discard",   "descarte": "discard",   "descartar": "discard",
+    "gira": "tap",           "girar": "tap",
+    "endereza": "untap",     "enderezar": "untap",
+    "sacrifica": "sacrifice","sacrificio": "sacrifice",
+    "roba": "draw",          "robar": "draw",
+    "busca": "search",       "buscar": "search",
+    "baraja": "shuffle",     "mezcla": "shuffle",
+    "regenera": "regenerate","regeneración": "regenerate",
+    "previene": "prevent",   "prevenir": "prevent",
+    "criatura": "creature",  "criaturas": "creature",
+    "hechizo": "spell",      "hechizos": "spell",
+    "tierra": "land",        "tierras": "land",
+    "artefacto": "artifact", "artefactos": "artifact",
+    "encantamiento": "enchantment",
+    "cementerio": "graveyard",
+    "biblioteca": "library",
+    "campo de batalla": "battlefield",
+    "maná": "mana",
+    "contador": "counter",   "contadores": "counter",
+    "objetivo": "target",
+    "bloquea": "block",      "bloquear": "block",    "bloqueo": "block",
+    "ataca": "attack",       "atacar": "attack",     "ataque": "attack",
+    "daño": "damage",        "daños": "damage",
+    "combate": "combat",
+    "oponente": "opponent",
+    "jugador": "player",
+    "turno": "turn",
+    "vida": "life",
+}
+
 def _buscar_bilingue(query: str, era_key: str, traducciones: dict, max_results: int = 30) -> list:
-    """Busca cartas por nombre/tipo/texto en inglés Y en español."""
+    """Busca cartas en inglés Y en español, expandiendo términos MTG al inglés equivalente."""
     db = _cargar_db_local(era_key)
     q = query.lower().strip()
     if not q:
         return []
+    en_eq = _ES_EN.get(q)
     resultados = []
     vistos = set()
     for carta in db:
         name = carta.get("name", "")
+        oracle = (carta.get("oracle_text") or "").lower()
         t = traducciones.get(name, {})
         if (q in name.lower() or
                 q in carta.get("type_line", "").lower() or
-                q in (carta.get("oracle_text") or "").lower() or
+                q in oracle or
+                (en_eq and en_eq in oracle) or
                 q in (t.get("name_es") or "").lower() or
                 q in (t.get("type_es") or "").lower() or
                 q in (t.get("text_es") or "").lower()):
