@@ -1,16 +1,86 @@
 import streamlit as st
 import json
 import os
+import re
 import subprocess
 import sys
-from deck_builder import ERAS, STAPLES, construir_mazo, a_moxfield, buscar_cartas_db
+from deck_builder import ERAS, STAPLES, construir_mazo, a_moxfield, buscar_cartas_db, _cargar_db_local
 from translator import translate_and_update_json
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
 DATA_DIR   = os.path.join(SCRIPT_DIR, "data")
 PDF_DIR    = os.path.join(SCRIPT_DIR, "output", "PDF")
 
+
+@st.cache_resource
+def _cargar_traducciones():
+    path = os.path.join(DATA_DIR, "mtg_translations_es.json")
+    if not os.path.exists(path):
+        return {}
+    with open(path, encoding="utf-8") as f:
+        return json.load(f)
+
+
+_MANA_CSS = {
+    "W": "w", "U": "u", "B": "b", "R": "r", "G": "g",
+    "C": "c", "S": "s", "X": "x", "Y": "y", "Z": "z",
+    "T": "tap", "Q": "untap", "E": "e", "P": "p",
+    "W/U": "wu", "W/B": "wb", "U/B": "ub", "U/R": "ur",
+    "B/R": "br", "B/G": "bg", "R/G": "rg", "R/W": "rw",
+    "G/W": "gw", "G/U": "gu",
+    "2/W": "2w", "2/U": "2u", "2/B": "2b", "2/R": "2r", "2/G": "2g",
+}
+
+def mana_html(cost: str) -> str:
+    """Convierte {W}{2}{U} en iconos HTML con Mana font."""
+    if not cost:
+        return ""
+    icons = []
+    for s in re.findall(r"\{([^}]+)\}", cost):
+        css = _MANA_CSS.get(s.upper(), s.lower())
+        icons.append(f'<i class="ms ms-{css} ms-cost ms-shadow" title="{{{s}}}"></i>')
+    return "".join(icons)
+
+
+def _buscar_bilingue(query: str, era_key: str, traducciones: dict, max_results: int = 30) -> list:
+    """Busca cartas por nombre/tipo/texto en inglés Y en español."""
+    db = _cargar_db_local(era_key)
+    q = query.lower().strip()
+    if not q:
+        return []
+    resultados = []
+    vistos = set()
+    for carta in db:
+        name = carta.get("name", "")
+        t = traducciones.get(name, {})
+        if (q in name.lower() or
+                q in carta.get("type_line", "").lower() or
+                q in (carta.get("oracle_text") or "").lower() or
+                q in (t.get("name_es") or "").lower() or
+                q in (t.get("type_es") or "").lower() or
+                q in (t.get("text_es") or "").lower()):
+            if name not in vistos:
+                resultados.append(carta)
+                vistos.add(name)
+        if len(resultados) >= max_results:
+            break
+    return resultados
+
+
 st.set_page_config(page_title="MTG Forge Lab", page_icon="🃏", layout="wide")
+
+st.markdown("""
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css">
+<style>
+.ms { font-size: 1.25em; vertical-align: middle; }
+.mtg-tabla { width: 100%; border-collapse: collapse; font-size: 0.9em; }
+.mtg-tabla th { background: #2c2c2c; color: #ddd; padding: 7px 10px; text-align: left; border-bottom: 2px solid #444; }
+.mtg-tabla td { padding: 5px 10px; border-bottom: 1px solid #2a2a2a; vertical-align: middle; color: #ccc; }
+.mtg-tabla tr:hover td { background: #1e1e1e; }
+.mtg-tabla td:nth-child(5) { font-size: 0.82em; color: #888; }
+</style>
+""", unsafe_allow_html=True)
+
 st.title("🃏 MTG Personal Lab")
 
 # ════════════════════════════════════════════════════════════════
@@ -100,25 +170,48 @@ with col_buscar:
     )
     query_busq = st.text_input("Buscar carta (nombre, tipo, efecto)...", key="query_busqueda")
 
+    traducciones_db = _cargar_traducciones()
+
     if query_busq.strip():
-        resultados = buscar_cartas_db(query_busq, era_busq, max_results=30)
+        resultados = _buscar_bilingue(query_busq, era_busq, traducciones_db, max_results=30)
         if resultados:
             st.caption(f"{len(resultados)} carta(s) encontrada(s)")
-            filas = [
-                {
-                    "Nombre": c.get("name", ""),
-                    "Coste": c.get("mana_cost", ""),
-                    "Tipo": c.get("type_line", ""),
-                    "Set": c.get("set", "").upper(),
-                    "Texto": ((c.get("oracle_text") or "")[:80] + "…" if len(c.get("oracle_text") or "") > 80 else (c.get("oracle_text") or "")),
-                }
-                for c in resultados
-            ]
-            st.dataframe(filas, use_container_width=True, hide_index=True)
+            filas_html = []
+            for c in resultados:
+                name = c.get("name", "")
+                t = traducciones_db.get(name, {})
+                nombre_es = t.get("name_es") or name
+                tipo_es   = t.get("type_es") or c.get("type_line", "")
+                texto_es  = t.get("text_es") or c.get("oracle_text") or ""
+                texto_corto = (texto_es[:85] + "…") if len(texto_es) > 85 else texto_es
+                coste_html  = mana_html(c.get("mana_cost", ""))
+                set_code    = c.get("set", "").upper()
+                filas_html.append(
+                    f"<tr>"
+                    f"<td>{nombre_es}</td>"
+                    f"<td style='white-space:nowrap'>{coste_html}</td>"
+                    f"<td>{tipo_es}</td>"
+                    f"<td>{set_code}</td>"
+                    f"<td>{texto_corto}</td>"
+                    f"</tr>"
+                )
+            st.markdown(
+                "<table class='mtg-tabla'>"
+                "<thead><tr><th>Nombre</th><th>Coste</th><th>Tipo</th><th>Set</th><th>Texto</th></tr></thead>"
+                f"<tbody>{''.join(filas_html)}</tbody>"
+                "</table>",
+                unsafe_allow_html=True,
+            )
 
             with st.form("form_agregar_carta"):
-                nombres_res = [c.get("name", "") for c in resultados]
-                carta_elegida = st.selectbox("Seleccionar carta:", nombres_res)
+                # Mostrar nombres en español en el dropdown
+                nombres_es_map = {}
+                for c in resultados:
+                    en = c.get("name", "")
+                    es = traducciones_db.get(en, {}).get("name_es") or en
+                    nombres_es_map[es] = en
+                nombre_es_elegido = st.selectbox("Seleccionar carta:", list(nombres_es_map.keys()))
+                carta_elegida = nombres_es_map[nombre_es_elegido]
                 cantidad = st.number_input("Cantidad", min_value=1, max_value=4, value=1)
                 if st.form_submit_button("➕ Agregar al Mazo"):
                     card_data = next((c for c in resultados if c.get("name") == carta_elegida), None)
@@ -161,7 +254,10 @@ with col_mazo:
         st.write("**Cartas en el mazo:**")
         for carta in list(mazo_m):
             c1, c2, c3 = st.columns([5, 1, 1])
-            c1.write(f"{carta['copias']}× **{carta['nombre']}** `{carta['mana_cost']}`")
+            c1.markdown(
+                f"{carta['copias']}× **{carta['nombre']}** {mana_html(carta['mana_cost'])}",
+                unsafe_allow_html=True,
+            )
             if c2.button("−", key=f"menos_{carta['nombre']}"):
                 carta["copias"] -= 1
                 if carta["copias"] <= 0:
@@ -223,11 +319,16 @@ if txts_disponibles:
     ruta_fabricar = os.path.join(DATA_DIR, archivo_elegido)
     st.caption(f"📂 `data/{archivo_elegido}`")
 
+    forzar = st.checkbox("🔄 Forzar regeneración (ignorar caché de imágenes)", value=False)
+
     if st.button("🃏 Fabricar Cartas y Generar PDF", type="primary"):
         fabricador = os.path.join(SCRIPT_DIR, "make_cards_old_border.py")
+        cmd = [sys.executable, fabricador, "--input", ruta_fabricar]
+        if forzar:
+            cmd.append("--force")
         with st.spinner("Generando imágenes y PDF... (puede tardar varios minutos)"):
             resultado = subprocess.run(
-                [sys.executable, fabricador, "--input", ruta_fabricar],
+                cmd,
                 capture_output=True,
                 text=True,
                 encoding="utf-8",
@@ -245,8 +346,9 @@ if txts_disponibles:
                 salida += "\n--- ERRORES ---\n" + resultado.stderr
             st.text(salida)
 
-        nombre_pdf = archivo_elegido.replace(".txt", "_OldBorder_Imprimir.pdf")
-        ruta_pdf   = os.path.join(PDF_DIR, nombre_pdf)
+        nombre_base = os.path.splitext(archivo_elegido)[0].replace(" ", "_").replace("/", "-")
+        nombre_pdf  = f"{nombre_base}_OldBorder_Imprimir.pdf"
+        ruta_pdf    = os.path.join(PDF_DIR, nombre_pdf)
         if os.path.exists(ruta_pdf):
             st.success(f"📄 PDF listo: `output/PDF/{nombre_pdf}`")
             with open(ruta_pdf, "rb") as f:
