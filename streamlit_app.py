@@ -124,10 +124,11 @@ st.markdown("""
 <style>
 .ms { font-size: 1.25em; vertical-align: middle; }
 .mtg-tabla { width: 100%; border-collapse: collapse; font-size: 0.9em; }
-.mtg-tabla th { background: #2c2c2c; color: #ddd; padding: 7px 10px; text-align: left; border-bottom: 2px solid #444; }
+.mtg-tabla th { background: #2c2c2c; color: #ddd; padding: 7px 10px; text-align: left; border-bottom: 2px solid #444; position: sticky; top: 0; z-index: 1; }
 .mtg-tabla td { padding: 5px 10px; border-bottom: 1px solid #2a2a2a; vertical-align: middle; color: #ccc; }
 .mtg-tabla tr:hover td { background: #1e1e1e; }
 .mtg-tabla td:nth-child(5) { font-size: 0.82em; color: #888; }
+.tabla-scroll { max-height: 380px; overflow-y: auto; border: 1px solid #333; border-radius: 6px; }
 </style>
 """, unsafe_allow_html=True)
 
@@ -222,49 +223,97 @@ with col_buscar:
 
     traducciones_db = _cargar_traducciones()
 
+    # Resetear filtro de letra cuando cambia la búsqueda o la era
+    _sig_busq = f"{query_busq}|{era_busq}"
+    if st.session_state.get("_ultima_busq") != _sig_busq:
+        st.session_state["_ultima_busq"] = _sig_busq
+        if "letra_filtro" in st.session_state:
+            del st.session_state["letra_filtro"]
+
     if query_busq.strip():
-        resultados = _buscar_bilingue(query_busq, era_busq, traducciones_db, max_results=30)
+        resultados = _buscar_bilingue(query_busq, era_busq, traducciones_db, max_results=500)
         if resultados:
-            st.caption(f"{len(resultados)} carta(s) encontrada(s)")
-            filas_html = []
+            # Construir mapa ES→EN para todos los resultados
+            nombres_es_map_total = {}
             for c in resultados:
-                name = c.get("name", "")
-                t = traducciones_db.get(name, {})
-                nombre_es = t.get("name_es") or name
-                tipo_es   = t.get("type_es") or c.get("type_line", "")
-                texto_es  = t.get("text_es") or c.get("oracle_text") or ""
-                texto_corto = (texto_es[:85] + "…") if len(texto_es) > 85 else texto_es
-                coste_html  = mana_html(c.get("mana_cost", ""))
-                set_code    = c.get("set", "").upper()
-                filas_html.append(
-                    f"<tr>"
-                    f"<td>{nombre_es}</td>"
-                    f"<td style='white-space:nowrap'>{coste_html}</td>"
-                    f"<td>{tipo_es}</td>"
-                    f"<td>{set_code}</td>"
-                    f"<td>{texto_corto}</td>"
-                    f"</tr>"
-                )
-            st.markdown(
-                "<table class='mtg-tabla'>"
-                "<thead><tr><th>Nombre</th><th>Coste</th><th>Tipo</th><th>Set</th><th>Texto</th></tr></thead>"
-                f"<tbody>{''.join(filas_html)}</tbody>"
-                "</table>",
-                unsafe_allow_html=True,
+                en = c.get("name", "")
+                es = traducciones_db.get(en, {}).get("name_es") or en
+                nombres_es_map_total[es] = en
+
+            # Letras disponibles en los resultados actuales
+            letras_disponibles = sorted(set(n[0].upper() for n in nombres_es_map_total if n))
+
+            # Filtro por letra (radio horizontal)
+            letra_sel = st.radio(
+                "Filtrar por letra:",
+                ["✦"] + letras_disponibles,
+                horizontal=True,
+                key="letra_filtro",
+            )
+            letra_activa = None if letra_sel == "✦" else letra_sel
+
+            # Aplicar filtro de letra
+            if letra_activa:
+                nombres_filtrados_letra = {
+                    es: en for es, en in nombres_es_map_total.items()
+                    if es.upper().startswith(letra_activa)
+                }
+                resultados_letra = [
+                    c for c in resultados if c.get("name") in set(nombres_filtrados_letra.values())
+                ]
+            else:
+                nombres_filtrados_letra = nombres_es_map_total
+                resultados_letra = resultados
+
+            # Filtro por color
+            COLOR_LABELS = {"W": "⬜ Blanco", "U": "🔵 Azul", "B": "⚫ Negro", "R": "🔴 Rojo", "G": "🟢 Verde", "C": "◇ Incoloro"}
+            colores_sel = st.multiselect(
+                "Filtrar por color:",
+                list(COLOR_LABELS.keys()),
+                format_func=lambda x: COLOR_LABELS[x],
+                key="color_filtro",
             )
 
+            # Aplicar filtro de color
+            if colores_sel:
+                def _carta_coincide_color(c, cols):
+                    card_colors = c.get("colors", [])
+                    if "C" in cols and not card_colors:
+                        return True
+                    return any(col in card_colors for col in cols if col != "C")
+                resultados_filtrados = [c for c in resultados_letra if _carta_coincide_color(c, colores_sel)]
+                nombres_filtrados = {
+                    es: en for es, en in nombres_filtrados_letra.items()
+                    if en in {c.get("name") for c in resultados_filtrados}
+                }
+            else:
+                resultados_filtrados = resultados_letra
+                nombres_filtrados = nombres_filtrados_letra
+
+            total_txt = (
+                f"{len(resultados_filtrados)} cartas"
+                if not letra_activa and not colores_sel
+                else f"{len(resultados_filtrados)} de {len(resultados)} cartas"
+            )
+
+            # Formulario de selección SIEMPRE visible, encima de la tabla
             with st.form("form_agregar_carta"):
-                # Mostrar nombres en español en el dropdown
-                nombres_es_map = {}
-                for c in resultados:
-                    en = c.get("name", "")
-                    es = traducciones_db.get(en, {}).get("name_es") or en
-                    nombres_es_map[es] = en
-                nombre_es_elegido = st.selectbox("Seleccionar carta:", list(nombres_es_map.keys()))
-                carta_elegida = nombres_es_map[nombre_es_elegido]
-                cantidad = st.number_input("Cantidad", min_value=1, max_value=4, value=1)
-                if st.form_submit_button("➕ Agregar al Mazo"):
-                    card_data = next((c for c in resultados if c.get("name") == carta_elegida), None)
+                col_sel, col_cant, col_btn = st.columns([4, 1, 1])
+                with col_sel:
+                    nombre_es_elegido = st.selectbox(
+                        f"Seleccionar carta ({total_txt}):",
+                        list(nombres_filtrados.keys()) if nombres_filtrados else ["—"],
+                    )
+                with col_cant:
+                    cantidad = st.number_input("Cant.", min_value=1, max_value=4, value=1)
+                with col_btn:
+                    st.markdown("<br>", unsafe_allow_html=True)
+                    agregar = st.form_submit_button("➕ Agregar")
+                if agregar and nombres_filtrados:
+                    carta_elegida = nombres_filtrados.get(nombre_es_elegido)
+                    card_data = next(
+                        (c for c in resultados_filtrados if c.get("name") == carta_elegida), None
+                    )
                     if card_data:
                         es_tierra = "Land" in card_data.get("type_line", "")
                         max_copias = 99 if es_tierra else 4
@@ -286,6 +335,39 @@ with col_buscar:
                                 "cmc": card_data.get("cmc", 0),
                             })
                         st.rerun()
+
+            # Tabla de resultados filtrados con scroll
+            filas_html = []
+            for c in resultados_filtrados:
+                name = c.get("name", "")
+                t = traducciones_db.get(name, {})
+                nombre_es = t.get("name_es") or name
+                tipo_es   = t.get("type_es") or c.get("type_line", "")
+                texto_es  = t.get("text_es") or c.get("oracle_text") or ""
+                texto_corto = (texto_es[:85] + "…") if len(texto_es) > 85 else texto_es
+                coste_html  = mana_html(c.get("mana_cost", ""))
+                set_code    = c.get("set", "").upper()
+                filas_html.append(
+                    f"<tr>"
+                    f"<td>{nombre_es}</td>"
+                    f"<td style='white-space:nowrap'>{coste_html}</td>"
+                    f"<td>{tipo_es}</td>"
+                    f"<td>{set_code}</td>"
+                    f"<td>{texto_corto}</td>"
+                    f"</tr>"
+                )
+            if filas_html:
+                st.markdown(
+                    "<div class='tabla-scroll'>"
+                    "<table class='mtg-tabla'>"
+                    "<thead><tr><th>Nombre</th><th>Coste</th><th>Tipo</th><th>Set</th><th>Texto</th></tr></thead>"
+                    f"<tbody>{''.join(filas_html)}</tbody>"
+                    "</table>"
+                    "</div>",
+                    unsafe_allow_html=True,
+                )
+            else:
+                st.info(f"No hay cartas con la letra '{letra_activa}' en esta búsqueda.")
         else:
             st.warning("No se encontraron cartas con ese texto.")
 
