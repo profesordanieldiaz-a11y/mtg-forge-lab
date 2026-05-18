@@ -32,7 +32,6 @@ _MANA_CSS = {
 }
 
 def mana_html(cost: str) -> str:
-    """Convierte {W}{2}{U} en iconos HTML con Mana font."""
     if not cost:
         return ""
     icons = []
@@ -117,6 +116,37 @@ def _buscar_bilingue(query: str, era_key: str, traducciones: dict, max_results: 
     return resultados
 
 
+def _carta_coincide_color(c, cols):
+    card_colors = c.get("colors", [])
+    if "C" in cols and not card_colors:
+        return True
+    return any(col in card_colors for col in cols if col != "C")
+
+
+def _mazo_manual_a_txt(cartas: list, nombre: str = "Mi Mazo Manual") -> str:
+    hechizos = [c for c in cartas if not c.get("es_tierra")]
+    tierras = [c for c in cartas if c.get("es_tierra")]
+    total = sum(c["copias"] for c in cartas)
+    lineas = [f"// Mazo: {nombre}", f"// Total: {total} cartas", ""]
+    for c in hechizos:
+        lineas.append(f"{c['copias']} {c['nombre']} ({c['set_code']}) {c['collector_number']}")
+    if tierras:
+        lineas.append("")
+        for c in tierras:
+            lineas.append(f"{c['copias']} {c['nombre']} ({c['set_code']}) {c['collector_number']}")
+    return "\n".join(lineas)
+
+
+# Session state — debe inicializarse antes de que cualquier pestaña se renderice
+if "mi_mazo_manual" not in st.session_state:
+    st.session_state["mi_mazo_manual"] = []
+
+# Pre-computar para Tab 3 y la consola (se reutiliza en ambos sitios)
+txts_disponibles = sorted([
+    f for f in os.listdir(DATA_DIR) if f.endswith(".txt")
+]) if os.path.isdir(DATA_DIR) else []
+
+
 st.set_page_config(page_title="MTG Forge Lab", page_icon="🃏", layout="wide")
 
 st.markdown("""
@@ -153,9 +183,9 @@ with tabs[0]:
         arquetipo = st.selectbox("Arquetipo", list(STAPLES.keys()), format_func=lambda x: x.replace("_", " ").title())
     with col_opt2:
         era = st.selectbox("Era", list(ERAS.keys()), format_func=lambda x: ERAS[x]["nombre"])
-    
+
     st.info(f"**Descripción:** {ERAS[era]['descripcion']}")
-    
+
     if st.button("🚀 Generar Mazo"):
         with st.spinner("Construyendo mazo..."):
             mazo = construir_mazo(arquetipo, era)
@@ -195,236 +225,211 @@ with tabs[0]:
 with tabs[1]:
     st.header("Buscador de Cartas — Mazo Manual")
 
-    def _carta_coincide_color(c, cols):
-        card_colors = c.get("colors", [])
-        if "C" in cols and not card_colors:
-            return True
-        return any(col in card_colors for col in cols if col != "C")
+    col_buscar, col_mazo = st.columns([3, 2])
 
-if "mi_mazo_manual" not in st.session_state:
-    st.session_state["mi_mazo_manual"] = []
+    with col_buscar:
+        era_busq = st.selectbox(
+            "Era de búsqueda",
+            list(ERAS.keys()),
+            key="era_busqueda",
+            format_func=lambda x: ERAS[x]["nombre"],
+        )
+        query_busq = st.text_input("Buscar carta (nombre, tipo, efecto)...", key="query_busqueda")
 
+        traducciones_db = _cargar_traducciones()
 
-def _mazo_manual_a_txt(cartas: list, nombre: str = "Mi Mazo Manual") -> str:
-    hechizos = [c for c in cartas if not c.get("es_tierra")]
-    tierras = [c for c in cartas if c.get("es_tierra")]
-    total = sum(c["copias"] for c in cartas)
-    lineas = [f"// Mazo: {nombre}", f"// Total: {total} cartas", ""]
-    for c in hechizos:
-        lineas.append(f"{c['copias']} {c['nombre']} ({c['set_code']}) {c['collector_number']}")
-    if tierras:
-        lineas.append("")
-        for c in tierras:
-            lineas.append(f"{c['copias']} {c['nombre']} ({c['set_code']}) {c['collector_number']}")
-    return "\n".join(lineas)
-
-
-col_buscar, col_mazo = st.columns([3, 2])
-
-with col_buscar:
-    era_busq = st.selectbox(
-        "Era de búsqueda",
-        list(ERAS.keys()),
-        key="era_busqueda",
-        format_func=lambda x: ERAS[x]["nombre"],
-    )
-    query_busq = st.text_input("Buscar carta (nombre, tipo, efecto)...", key="query_busqueda")
-
-    traducciones_db = _cargar_traducciones()
-
-    # Resetear filtro de letra cuando cambia la búsqueda o la era
-    if query_busq.strip():
-        resultados = _buscar_bilingue(query_busq, era_busq, traducciones_db, max_results=500)
-        if resultados:
-            # Letras disponibles en los resultados actuales
-            letras_disponibles = sorted(set(
-                (traducciones_db.get(c.get("name", ""), {}).get("name_es") or c.get("name", ""))[0].upper() 
-                for c in resultados if c.get("name")
-            ))
-
-            # Filtro por letra (radio horizontal)
-            letra_sel = st.radio(
-                "Filtrar por letra:",
-                ["✦"] + letras_disponibles,
-                horizontal=True,
-                key="letra_filtro",
-            )
-            letra_activa = None if letra_sel == "✦" else letra_sel
-
-            # Aplicar filtro de letra
-            if letra_activa:
-                nombres_filtrados_letra = {
-                    es: en for es, en in nombres_es_map_total.items()
-                    if es.upper().startswith(letra_activa)
+        if query_busq.strip():
+            resultados = _buscar_bilingue(query_busq, era_busq, traducciones_db, max_results=500)
+            if resultados:
+                # Mapa nombre_es → nombre_en para todos los resultados
+                nombres_es_map_total = {
+                    (traducciones_db.get(c.get("name", ""), {}).get("name_es") or c.get("name", "")): c.get("name", "")
+                    for c in resultados if c.get("name")
                 }
-                resultados_letra = [
-                    c for c in resultados if c.get("name") in set(nombres_filtrados_letra.values())
-                ]
-            else:
-                nombres_filtrados_letra = nombres_es_map_total
-                resultados_letra = resultados
 
-            # Filtro por color
-            COLOR_LABELS = {"W": "⬜ Blanco", "U": "🔵 Azul", "B": "⚫ Negro", "R": "🔴 Rojo", "G": "🟢 Verde", "C": "◇ Incoloro"}
-            colores_sel = st.multiselect(
-                "Filtrar por color:",
-                list(COLOR_LABELS.keys()),
-                format_func=lambda x: COLOR_LABELS[x],
-                key="color_filtro",
-            )
+                # Letras disponibles en los resultados actuales
+                letras_disponibles = sorted(set(
+                    (traducciones_db.get(c.get("name", ""), {}).get("name_es") or c.get("name", ""))[0].upper()
+                    for c in resultados if c.get("name")
+                ))
 
-            # Aplicar filtro de color
-            if colores_sel:
-                def _carta_coincide_color(c, cols):
-                    card_colors = c.get("colors", [])
-                    if "C" in cols and not card_colors:
-                        return True
-                    return any(col in card_colors for col in cols if col != "C")
-                resultados_filtrados = [c for c in resultados_letra if _carta_coincide_color(c, colores_sel)]
-                nombres_filtrados = {
-                    es: en for es, en in nombres_filtrados_letra.items()
-                    if en in {c.get("name") for c in resultados_filtrados}
-                }
-            else:
-                resultados_filtrados = resultados_letra
-                nombres_filtrados = nombres_filtrados_letra
-
-            total_txt = (
-                f"{len(resultados_filtrados)} cartas"
-                if not letra_activa and not colores_sel
-                else f"{len(resultados_filtrados)} de {len(resultados)} cartas"
-            )
-
-            # Formulario de selección SIEMPRE visible, encima de la tabla
-            with st.form("form_agregar_carta"):
-                col_sel, col_cant, col_btn = st.columns([4, 1, 1])
-                with col_sel:
-                    nombre_es_elegido = st.selectbox(
-                        f"Seleccionar carta ({total_txt}):",
-                        list(nombres_filtrados.keys()) if nombres_filtrados else ["—"],
-                    )
-                with col_cant:
-                    cantidad = st.number_input("Cant.", min_value=1, max_value=4, value=1)
-                with col_btn:
-                    st.markdown("<br>", unsafe_allow_html=True)
-                    agregar = st.form_submit_button("➕ Agregar")
-                if agregar and nombres_filtrados:
-                    carta_elegida = nombres_filtrados.get(nombre_es_elegido)
-                    card_data = next(
-                        (c for c in resultados_filtrados if c.get("name") == carta_elegida), None
-                    )
-                    if card_data:
-                        es_tierra = "Land" in card_data.get("type_line", "")
-                        max_copias = 99 if es_tierra else 4
-                        existente = next(
-                            (e for e in st.session_state["mi_mazo_manual"] if e["nombre"] == carta_elegida),
-                            None,
-                        )
-                        if existente:
-                            existente["copias"] = min(existente["copias"] + cantidad, max_copias)
-                        else:
-                            st.session_state["mi_mazo_manual"].append({
-                                "nombre": carta_elegida,
-                                "copias": min(cantidad, max_copias),
-                                "set_code": card_data.get("set", "???").upper(),
-                                "collector_number": card_data.get("collector_number", "1"),
-                                "tipo": card_data.get("type_line", ""),
-                                "es_tierra": es_tierra,
-                                "mana_cost": card_data.get("mana_cost", ""),
-                                "cmc": card_data.get("cmc", 0),
-                            })
-                        st.rerun()
-
-            # Tabla de resultados filtrados con scroll
-            filas_html = []
-            for c in resultados_filtrados:
-                name = c.get("name", "")
-                t = traducciones_db.get(name, {})
-                nombre_es = t.get("name_es") or name
-                tipo_es   = t.get("type_es") or c.get("type_line", "")
-                art_url   = c.get("art_crop", "")
-                img_html  = f'<img src="{art_url}" width="40" style="border-radius:4px">' if art_url else ""
-                coste_html  = mana_html(c.get("mana_cost", ""))
-                set_code    = c.get("set", "").upper()
-                
-                # Tooltip con la imagen grande al pasar el ratón (opcional)
-                filas_html.append(
-                    f"<tr>"
-                    f"<td>{img_html}</td>"
-                    f"<td>{nombre_es}</td>"
-                    f"<td style='white-space:nowrap'>{coste_html}</td>"
-                    f"<td>{tipo_es}</td>"
-                    f"<td>{set_code}</td>"
-                    f"</tr>"
+                # Filtro por letra (radio horizontal)
+                letra_sel = st.radio(
+                    "Filtrar por letra:",
+                    ["✦"] + letras_disponibles,
+                    horizontal=True,
+                    key="letra_filtro",
                 )
-            if filas_html:
-                st.markdown(
-                    "<div class='tabla-scroll'>"
-                    "<table class='mtg-tabla'>"
-                    "<thead><tr><th>Art</th><th>Nombre</th><th>Coste</th><th>Tipo</th><th>Set</th></tr></thead>"
-                    f"<tbody>{''.join(filas_html)}</tbody>"
-                    "</table>"
-                    "</div>",
+                letra_activa = None if letra_sel == "✦" else letra_sel
+
+                # Aplicar filtro de letra
+                if letra_activa:
+                    nombres_filtrados_letra = {
+                        es: en for es, en in nombres_es_map_total.items()
+                        if es.upper().startswith(letra_activa)
+                    }
+                    resultados_letra = [
+                        c for c in resultados if c.get("name") in set(nombres_filtrados_letra.values())
+                    ]
+                else:
+                    nombres_filtrados_letra = nombres_es_map_total
+                    resultados_letra = resultados
+
+                # Filtro por color
+                COLOR_LABELS = {"W": "⬜ Blanco", "U": "🔵 Azul", "B": "⚫ Negro", "R": "🔴 Rojo", "G": "🟢 Verde", "C": "◇ Incoloro"}
+                colores_sel = st.multiselect(
+                    "Filtrar por color:",
+                    list(COLOR_LABELS.keys()),
+                    format_func=lambda x: COLOR_LABELS[x],
+                    key="color_filtro",
+                )
+
+                # Aplicar filtro de color
+                if colores_sel:
+                    resultados_filtrados = [c for c in resultados_letra if _carta_coincide_color(c, colores_sel)]
+                    nombres_filtrados = {
+                        es: en for es, en in nombres_filtrados_letra.items()
+                        if en in {c.get("name") for c in resultados_filtrados}
+                    }
+                else:
+                    resultados_filtrados = resultados_letra
+                    nombres_filtrados = nombres_filtrados_letra
+
+                total_txt = (
+                    f"{len(resultados_filtrados)} cartas"
+                    if not letra_activa and not colores_sel
+                    else f"{len(resultados_filtrados)} de {len(resultados)} cartas"
+                )
+
+                # Formulario de selección SIEMPRE visible, encima de la tabla
+                with st.form("form_agregar_carta"):
+                    col_sel, col_cant, col_btn = st.columns([4, 1, 1])
+                    with col_sel:
+                        nombre_es_elegido = st.selectbox(
+                            f"Seleccionar carta ({total_txt}):",
+                            list(nombres_filtrados.keys()) if nombres_filtrados else ["—"],
+                        )
+                    with col_cant:
+                        cantidad = st.number_input("Cant.", min_value=1, max_value=4, value=1)
+                    with col_btn:
+                        st.markdown("<br>", unsafe_allow_html=True)
+                        agregar = st.form_submit_button("➕ Agregar")
+                    if agregar and nombres_filtrados:
+                        carta_elegida = nombres_filtrados.get(nombre_es_elegido)
+                        card_data = next(
+                            (c for c in resultados_filtrados if c.get("name") == carta_elegida), None
+                        )
+                        if card_data:
+                            es_tierra = "Land" in card_data.get("type_line", "")
+                            max_copias = 99 if es_tierra else 4
+                            existente = next(
+                                (e for e in st.session_state["mi_mazo_manual"] if e["nombre"] == carta_elegida),
+                                None,
+                            )
+                            if existente:
+                                existente["copias"] = min(existente["copias"] + cantidad, max_copias)
+                            else:
+                                st.session_state["mi_mazo_manual"].append({
+                                    "nombre": carta_elegida,
+                                    "copias": min(cantidad, max_copias),
+                                    "set_code": card_data.get("set", "???").upper(),
+                                    "collector_number": card_data.get("collector_number", "1"),
+                                    "tipo": card_data.get("type_line", ""),
+                                    "es_tierra": es_tierra,
+                                    "mana_cost": card_data.get("mana_cost", ""),
+                                    "cmc": card_data.get("cmc", 0),
+                                })
+                            st.rerun()
+
+                # Tabla de resultados filtrados con scroll
+                filas_html = []
+                for c in resultados_filtrados:
+                    name = c.get("name", "")
+                    t = traducciones_db.get(name, {})
+                    nombre_es = t.get("name_es") or name
+                    tipo_es   = t.get("type_es") or c.get("type_line", "")
+                    art_url   = c.get("art_crop", "")
+                    img_html  = f'<img src="{art_url}" width="40" style="border-radius:4px">' if art_url else ""
+                    coste_html  = mana_html(c.get("mana_cost", ""))
+                    set_code    = c.get("set", "").upper()
+
+                    filas_html.append(
+                        f"<tr>"
+                        f"<td>{img_html}</td>"
+                        f"<td>{nombre_es}</td>"
+                        f"<td style='white-space:nowrap'>{coste_html}</td>"
+                        f"<td>{tipo_es}</td>"
+                        f"<td>{set_code}</td>"
+                        f"</tr>"
+                    )
+                if filas_html:
+                    st.markdown(
+                        "<div class='tabla-scroll'>"
+                        "<table class='mtg-tabla'>"
+                        "<thead><tr><th>Art</th><th>Nombre</th><th>Coste</th><th>Tipo</th><th>Set</th></tr></thead>"
+                        f"<tbody>{''.join(filas_html)}</tbody>"
+                        "</table>"
+                        "</div>",
+                        unsafe_allow_html=True,
+                    )
+                else:
+                    st.info(f"No hay cartas con la letra '{letra_activa}' en esta búsqueda.")
+            else:
+                st.warning("No se encontraron cartas con ese texto.")
+
+    with col_mazo:
+        mazo_m = st.session_state["mi_mazo_manual"]
+        total_m = sum(c["copias"] for c in mazo_m)
+        hechizos_m = sum(c["copias"] for c in mazo_m if not c["es_tierra"])
+        tierras_m = sum(c["copias"] for c in mazo_m if c["es_tierra"])
+
+        cm1, cm2, cm3 = st.columns(3)
+        cm1.metric("Total", total_m)
+        cm2.metric("Hechizos", hechizos_m)
+        cm3.metric("Tierras", tierras_m)
+
+        if mazo_m:
+            st.write("**Cartas en el mazo:**")
+            for carta in list(mazo_m):
+                c1, c2, c3 = st.columns([5, 1, 1])
+                c1.markdown(
+                    f"{carta['copias']}× **{carta['nombre']}** {mana_html(carta['mana_cost'])}",
                     unsafe_allow_html=True,
                 )
-            else:
-                st.info(f"No hay cartas con la letra '{letra_activa}' en esta búsqueda.")
-        else:
-            st.warning("No se encontraron cartas con ese texto.")
-
-with col_mazo:
-    mazo_m = st.session_state["mi_mazo_manual"]
-    total_m = sum(c["copias"] for c in mazo_m)
-    hechizos_m = sum(c["copias"] for c in mazo_m if not c["es_tierra"])
-    tierras_m = sum(c["copias"] for c in mazo_m if c["es_tierra"])
-
-    cm1, cm2, cm3 = st.columns(3)
-    cm1.metric("Total", total_m)
-    cm2.metric("Hechizos", hechizos_m)
-    cm3.metric("Tierras", tierras_m)
-
-    if mazo_m:
-        st.write("**Cartas en el mazo:**")
-        for carta in list(mazo_m):
-            c1, c2, c3 = st.columns([5, 1, 1])
-            c1.markdown(
-                f"{carta['copias']}× **{carta['nombre']}** {mana_html(carta['mana_cost'])}",
-                unsafe_allow_html=True,
-            )
-            if c2.button("−", key=f"menos_{carta['nombre']}"):
-                carta["copias"] -= 1
-                if carta["copias"] <= 0:
+                if c2.button("−", key=f"menos_{carta['nombre']}"):
+                    carta["copias"] -= 1
+                    if carta["copias"] <= 0:
+                        st.session_state["mi_mazo_manual"].remove(carta)
+                    st.rerun()
+                if c3.button("🗑", key=f"quitar_{carta['nombre']}"):
                     st.session_state["mi_mazo_manual"].remove(carta)
-                st.rerun()
-            if c3.button("🗑", key=f"quitar_{carta['nombre']}"):
-                st.session_state["mi_mazo_manual"].remove(carta)
-                st.rerun()
+                    st.rerun()
 
-        st.divider()
-        nombre_manual = st.text_input("Nombre del archivo:", value="mi_mazo_manual", key="nombre_manual_input")
-        txt_manual = _mazo_manual_a_txt(mazo_m, nombre_manual)
+            st.divider()
+            nombre_manual = st.text_input("Nombre del archivo:", value="mi_mazo_manual", key="nombre_manual_input")
+            txt_manual = _mazo_manual_a_txt(mazo_m, nombre_manual)
 
-        col_dl, col_sv = st.columns(2)
-        with col_dl:
-            st.download_button(
-                "⬇️ Descargar .txt",
-                data=txt_manual,
-                file_name=f"{nombre_manual}.txt",
-                mime="text/plain",
-            )
-        with col_sv:
-            if st.button("💾 Guardar en data/"):
-                ruta_manual = os.path.join(DATA_DIR, f"{nombre_manual}.txt")
-                with open(ruta_manual, "w", encoding="utf-8") as f:
-                    f.write(txt_manual)
-                st.success(f"✅ `data/{nombre_manual}.txt`")
+            col_dl, col_sv = st.columns(2)
+            with col_dl:
+                st.download_button(
+                    "⬇️ Descargar .txt",
+                    data=txt_manual,
+                    file_name=f"{nombre_manual}.txt",
+                    mime="text/plain",
+                )
+            with col_sv:
+                if st.button("💾 Guardar en data/"):
+                    ruta_manual = os.path.join(DATA_DIR, f"{nombre_manual}.txt")
+                    with open(ruta_manual, "w", encoding="utf-8") as f:
+                        f.write(txt_manual)
+                    st.success(f"✅ `data/{nombre_manual}.txt`")
+                    st.rerun()
+
+            if st.button("🗑️ Limpiar mazo"):
+                st.session_state["mi_mazo_manual"] = []
                 st.rerun()
-
-        if st.button("🗑️ Limpiar mazo"):
-            st.session_state["mi_mazo_manual"] = []
-            st.rerun()
-    else:
-        st.info("El mazo está vacío. Busca y agrega cartas.")
+        else:
+            st.info("El mazo está vacío. Busca y agrega cartas.")
 
 # ════════════════════════════════════════════════════════════════
 # PESTAÑA 3 — Fabricar Cartas + PDF
@@ -432,75 +437,71 @@ with col_mazo:
 with tabs[2]:
     st.header("Generación de Archivos")
 
-txts_disponibles = sorted([
-    f for f in os.listdir(DATA_DIR) if f.endswith(".txt")
-]) if os.path.isdir(DATA_DIR) else []
+    default_idx = 0
+    if "mazo_txt" in st.session_state:
+        nombre_reciente = os.path.basename(st.session_state["mazo_txt"])
+        if nombre_reciente in txts_disponibles:
+            default_idx = txts_disponibles.index(nombre_reciente)
 
-default_idx = 0
-if "mazo_txt" in st.session_state:
-    nombre_reciente = os.path.basename(st.session_state["mazo_txt"])
-    if nombre_reciente in txts_disponibles:
-        default_idx = txts_disponibles.index(nombre_reciente)
+    if txts_disponibles:
+        archivo_elegido = st.selectbox(
+            "Lista de cartas a fabricar:",
+            txts_disponibles,
+            index=default_idx,
+        )
+        ruta_fabricar = os.path.join(DATA_DIR, archivo_elegido)
+        st.caption(f"📂 `data/{archivo_elegido}`")
 
-if txts_disponibles:
-    archivo_elegido = st.selectbox(
-        "Lista de cartas a fabricar:",
-        txts_disponibles,
-        index=default_idx,
-    )
-    ruta_fabricar = os.path.join(DATA_DIR, archivo_elegido)
-    st.caption(f"📂 `data/{archivo_elegido}`")
+        forzar = st.checkbox("🔄 Forzar regeneración (ignorar caché de imágenes)", value=False)
 
-    forzar = st.checkbox("🔄 Forzar regeneración (ignorar caché de imágenes)", value=False)
-
-    if st.button("🃏 Fabricar Cartas y Generar PDF", type="primary"):
-        fabricador = os.path.join(SCRIPT_DIR, "make_cards_old_border.py")
-        cmd = [sys.executable, fabricador, "--input", ruta_fabricar]
-        if forzar:
-            cmd.append("--force")
-        with st.spinner("Generando imágenes y PDF... (puede tardar varios minutos)"):
-            resultado = subprocess.run(
-                cmd,
-                capture_output=True,
-                text=True,
-                encoding="utf-8",
-                errors="replace",
-            )
-
-        if resultado.returncode == 0:
-            st.success("✅ ¡Cartas fabricadas correctamente!")
-        else:
-            st.error("❌ Hubo un error durante la fabricación.")
-
-        with st.expander("📄 Log del proceso", expanded=(resultado.returncode != 0)):
-            salida = resultado.stdout
-            if resultado.stderr:
-                salida += "\n--- ERRORES ---\n" + resultado.stderr
-            st.text(salida)
-
-        nombre_base = os.path.splitext(archivo_elegido)[0].replace(" ", "_").replace("/", "-")
-        nombre_pdf  = f"{nombre_base}_OldBorder_Imprimir.pdf"
-        ruta_pdf    = os.path.join(PDF_DIR, nombre_pdf)
-        if os.path.exists(ruta_pdf):
-            st.success(f"📄 PDF listo: `output/PDF/{nombre_pdf}`")
-            with open(ruta_pdf, "rb") as f:
-                st.download_button(
-                    label="⬇️ Descargar PDF",
-                    data=f,
-                    file_name=nombre_pdf,
-                    mime="application/pdf",
+        if st.button("🃏 Fabricar Cartas y Generar PDF", type="primary"):
+            fabricador = os.path.join(SCRIPT_DIR, "make_cards_old_border.py")
+            cmd = [sys.executable, fabricador, "--input", ruta_fabricar]
+            if forzar:
+                cmd.append("--force")
+            with st.spinner("Generando imágenes y PDF... (puede tardar varios minutos)"):
+                resultado = subprocess.run(
+                    cmd,
+                    capture_output=True,
+                    text=True,
+                    encoding="utf-8",
+                    errors="replace",
                 )
-        else:
-            if os.path.isdir(PDF_DIR):
-                pdfs = sorted(
-                    [p for p in os.listdir(PDF_DIR) if p.endswith(".pdf")],
-                    key=lambda p: os.path.getmtime(os.path.join(PDF_DIR, p)),
-                    reverse=True,
-                )
-                if pdfs:
-                    st.info(f"PDF más reciente disponible: `output/PDF/{pdfs[0]}`")
-else:
-    st.warning("No hay archivos `.txt` en la carpeta `data/`. Construye primero un mazo.")
+
+            if resultado.returncode == 0:
+                st.success("✅ ¡Cartas fabricadas correctamente!")
+            else:
+                st.error("❌ Hubo un error durante la fabricación.")
+
+            with st.expander("📄 Log del proceso", expanded=(resultado.returncode != 0)):
+                salida = resultado.stdout
+                if resultado.stderr:
+                    salida += "\n--- ERRORES ---\n" + resultado.stderr
+                st.text(salida)
+
+            nombre_base = os.path.splitext(archivo_elegido)[0].replace(" ", "_").replace("/", "-")
+            nombre_pdf  = f"{nombre_base}_OldBorder_Imprimir.pdf"
+            ruta_pdf    = os.path.join(PDF_DIR, nombre_pdf)
+            if os.path.exists(ruta_pdf):
+                st.success(f"📄 PDF listo: `output/PDF/{nombre_pdf}`")
+                with open(ruta_pdf, "rb") as f:
+                    st.download_button(
+                        label="⬇️ Descargar PDF",
+                        data=f,
+                        file_name=nombre_pdf,
+                        mime="application/pdf",
+                    )
+            else:
+                if os.path.isdir(PDF_DIR):
+                    pdfs = sorted(
+                        [p for p in os.listdir(PDF_DIR) if p.endswith(".pdf")],
+                        key=lambda p: os.path.getmtime(os.path.join(PDF_DIR, p)),
+                        reverse=True,
+                    )
+                    if pdfs:
+                        st.info(f"PDF más reciente disponible: `output/PDF/{pdfs[0]}`")
+    else:
+        st.warning("No hay archivos `.txt` en la carpeta `data/`. Construye primero un mazo.")
 
 st.divider()
 
