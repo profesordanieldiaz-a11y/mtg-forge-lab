@@ -122,46 +122,52 @@ st.set_page_config(page_title="MTG Forge Lab", page_icon="🃏", layout="wide")
 st.markdown("""
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css">
 <style>
+/* Estilo General Oscuro */
+.main { background-color: #111; color: #eee; }
 .ms { font-size: 1.25em; vertical-align: middle; }
+
+/* Tablas estilo Magic */
 .mtg-tabla { width: 100%; border-collapse: collapse; font-size: 0.9em; }
-.mtg-tabla th { background: #2c2c2c; color: #ddd; padding: 7px 10px; text-align: left; border-bottom: 2px solid #444; position: sticky; top: 0; z-index: 1; }
+.mtg-tabla th { background: #1a1a1a; color: #ffd700; padding: 10px; text-align: left; border-bottom: 2px solid #ffd700; position: sticky; top: 0; z-index: 1; font-variant: small-caps; }
 .mtg-tabla td { padding: 5px 10px; border-bottom: 1px solid #2a2a2a; vertical-align: middle; color: #ccc; }
 .mtg-tabla tr:hover td { background: #1e1e1e; }
 .mtg-tabla td:nth-child(5) { font-size: 0.82em; color: #888; }
-.tabla-scroll { max-height: 380px; overflow-y: auto; border: 1px solid #333; border-radius: 6px; }
+.tabla-scroll { max-height: 450px; overflow-y: auto; border: 1px solid #444; border-radius: 8px; background: #111; }
+
+/* Previsualización de carta */
+.img-preview { border: 1px solid #444; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.8); margin-bottom: 20px; }
 </style>
 """, unsafe_allow_html=True)
 
 st.title("🃏 MTG Personal Lab")
 
+tabs = st.tabs(["🏗️ Constructor de Mazos", "🔍 Buscador & Mazo Manual", "🖨️ Fabricar PDF"])
+
 # ════════════════════════════════════════════════════════════════
-# SECCIÓN 1 — Construir Mazo
+# PESTAÑA 1 — Constructor
 # ════════════════════════════════════════════════════════════════
-st.sidebar.header("1️⃣ Construir Mazo")
+with tabs[0]:
+    st.header("Construir Mazo Automático")
+    col_opt1, col_opt2 = st.columns(2)
+    with col_opt1:
+        arquetipo = st.selectbox("Arquetipo", list(STAPLES.keys()), format_func=lambda x: x.replace("_", " ").title())
+    with col_opt2:
+        era = st.selectbox("Era", list(ERAS.keys()), format_func=lambda x: ERAS[x]["nombre"])
+    
+    st.info(f"**Descripción:** {ERAS[era]['descripcion']}")
+    
+    if st.button("🚀 Generar Mazo"):
+        with st.spinner("Construyendo mazo..."):
+            mazo = construir_mazo(arquetipo, era)
+            nombre_archivo = f"mazo_{arquetipo}_{era}.txt"
+            ruta_txt = os.path.join(DATA_DIR, nombre_archivo)
+            os.makedirs(DATA_DIR, exist_ok=True)
+            with open(ruta_txt, "w", encoding="utf-8") as f:
+                f.write(a_moxfield(mazo))
+            st.session_state["mazo_actual"] = mazo
+            st.session_state["mazo_txt"]    = ruta_txt
+            st.success(f"✅ Mazo guardado en `data/{nombre_archivo}`")
 
-arquetipo = st.sidebar.selectbox(
-    "Arquetipo", list(STAPLES.keys()),
-    format_func=lambda x: x.replace("_", " ").title()
-)
-era = st.sidebar.selectbox(
-    "Era", list(ERAS.keys()),
-    format_func=lambda x: ERAS[x]["nombre"]
-)
-st.sidebar.info(f"{ERAS[era]['descripcion']}")
-
-if st.sidebar.button("🚀 Construir Mazo"):
-    with st.spinner("Consultando Scryfall API..."):
-        mazo = construir_mazo(arquetipo, era)
-        nombre_archivo = f"mazo_{arquetipo}_{era}.txt"
-        ruta_txt = os.path.join(DATA_DIR, nombre_archivo)
-        os.makedirs(DATA_DIR, exist_ok=True)
-        with open(ruta_txt, "w", encoding="utf-8") as f:
-            f.write(a_moxfield(mazo))
-        st.session_state["mazo_actual"] = mazo
-        st.session_state["mazo_txt"]    = ruta_txt
-        st.success(f"✅ Mazo guardado en `data/{nombre_archivo}`")
-
-with st.expander("📋 Ver lista del mazo", expanded=False):
     if "mazo_actual" in st.session_state:
         mazo = st.session_state["mazo_actual"]
         col1, col2 = st.columns([1, 1])
@@ -182,15 +188,18 @@ with st.expander("📋 Ver lista del mazo", expanded=False):
                 for c in mazo["cartas"]
             ]
             st.table(df_data)
-    else:
-        st.info("Aún no has construido un mazo en esta sesión.")
-
-st.divider()
 
 # ════════════════════════════════════════════════════════════════
-# SECCIÓN 2 — Buscador de Cartas / Mazo Manual
+# PESTAÑA 2 — Buscador de Cartas / Mazo Manual
 # ════════════════════════════════════════════════════════════════
-st.subheader("🔍 Buscador de Cartas — Mazo Manual")
+with tabs[1]:
+    st.header("Buscador de Cartas — Mazo Manual")
+
+    def _carta_coincide_color(c, cols):
+        card_colors = c.get("colors", [])
+        if "C" in cols and not card_colors:
+            return True
+        return any(col in card_colors for col in cols if col != "C")
 
 if "mi_mazo_manual" not in st.session_state:
     st.session_state["mi_mazo_manual"] = []
@@ -224,24 +233,14 @@ with col_buscar:
     traducciones_db = _cargar_traducciones()
 
     # Resetear filtro de letra cuando cambia la búsqueda o la era
-    _sig_busq = f"{query_busq}|{era_busq}"
-    if st.session_state.get("_ultima_busq") != _sig_busq:
-        st.session_state["_ultima_busq"] = _sig_busq
-        if "letra_filtro" in st.session_state:
-            del st.session_state["letra_filtro"]
-
     if query_busq.strip():
         resultados = _buscar_bilingue(query_busq, era_busq, traducciones_db, max_results=500)
         if resultados:
-            # Construir mapa ES→EN para todos los resultados
-            nombres_es_map_total = {}
-            for c in resultados:
-                en = c.get("name", "")
-                es = traducciones_db.get(en, {}).get("name_es") or en
-                nombres_es_map_total[es] = en
-
             # Letras disponibles en los resultados actuales
-            letras_disponibles = sorted(set(n[0].upper() for n in nombres_es_map_total if n))
+            letras_disponibles = sorted(set(
+                (traducciones_db.get(c.get("name", ""), {}).get("name_es") or c.get("name", ""))[0].upper() 
+                for c in resultados if c.get("name")
+            ))
 
             # Filtro por letra (radio horizontal)
             letra_sel = st.radio(
@@ -343,24 +342,26 @@ with col_buscar:
                 t = traducciones_db.get(name, {})
                 nombre_es = t.get("name_es") or name
                 tipo_es   = t.get("type_es") or c.get("type_line", "")
-                texto_es  = t.get("text_es") or c.get("oracle_text") or ""
-                texto_corto = (texto_es[:85] + "…") if len(texto_es) > 85 else texto_es
+                art_url   = c.get("art_crop", "")
+                img_html  = f'<img src="{art_url}" width="40" style="border-radius:4px">' if art_url else ""
                 coste_html  = mana_html(c.get("mana_cost", ""))
                 set_code    = c.get("set", "").upper()
+                
+                # Tooltip con la imagen grande al pasar el ratón (opcional)
                 filas_html.append(
                     f"<tr>"
+                    f"<td>{img_html}</td>"
                     f"<td>{nombre_es}</td>"
                     f"<td style='white-space:nowrap'>{coste_html}</td>"
                     f"<td>{tipo_es}</td>"
                     f"<td>{set_code}</td>"
-                    f"<td>{texto_corto}</td>"
                     f"</tr>"
                 )
             if filas_html:
                 st.markdown(
                     "<div class='tabla-scroll'>"
                     "<table class='mtg-tabla'>"
-                    "<thead><tr><th>Nombre</th><th>Coste</th><th>Tipo</th><th>Set</th><th>Texto</th></tr></thead>"
+                    "<thead><tr><th>Art</th><th>Nombre</th><th>Coste</th><th>Tipo</th><th>Set</th></tr></thead>"
                     f"<tbody>{''.join(filas_html)}</tbody>"
                     "</table>"
                     "</div>",
@@ -425,12 +426,11 @@ with col_mazo:
     else:
         st.info("El mazo está vacío. Busca y agrega cartas.")
 
-st.divider()
-
 # ════════════════════════════════════════════════════════════════
-# SECCIÓN 3 — Fabricar Cartas + PDF
+# PESTAÑA 3 — Fabricar Cartas + PDF
 # ════════════════════════════════════════════════════════════════
-st.subheader("🖨️ Fabricar Cartas + PDF")
+with tabs[2]:
+    st.header("Generación de Archivos")
 
 txts_disponibles = sorted([
     f for f in os.listdir(DATA_DIR) if f.endswith(".txt")
