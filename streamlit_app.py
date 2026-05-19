@@ -150,26 +150,301 @@ txts_disponibles = sorted([
 st.set_page_config(page_title="MTG Forge Lab", page_icon="🃏", layout="wide")
 
 st.markdown("""
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css">
 <style>
-/* Estilo General Oscuro */
-.main { background-color: #111; color: #eee; }
+/* ══ MTG Lab Design System ══════════════════════════════════════ */
+:root {
+  --accent-h:   80;
+  --bg:         oklch(0.16 0.012 60);
+  --bg-1:       oklch(0.19 0.014 60);
+  --bg-2:       oklch(0.22 0.014 60);
+  --surface:    oklch(0.215 0.013 60);
+  --surface-hi: oklch(0.255 0.014 60);
+  --border:     oklch(0.32 0.015 65);
+  --border-hi:  oklch(0.42 0.020 65);
+  --text:       oklch(0.93 0.010 80);
+  --text-dim:   oklch(0.66 0.012 70);
+  --text-mute:  oklch(0.50 0.010 70);
+  --accent:     oklch(0.75 0.13 80);
+  --accent-hi:  oklch(0.82 0.14 80);
+  --accent-glow:oklch(0.75 0.13 80 / 0.35);
+  --danger:     oklch(0.66 0.18 25);
+  --radius:     6px;
+  --radius-lg:  10px;
+}
+
+/* ── Fondo y tipografía base ── */
+.stApp, .main, [data-testid="stAppViewContainer"],
+[data-testid="stAppViewContainer"] > section {
+  background:
+    radial-gradient(1200px 600px at 20% -10%, oklch(0.22 0.02 75 / 0.40), transparent 60%),
+    radial-gradient(900px 500px at 100% 110%, oklch(0.20 0.02 80 / 0.30), transparent 60%),
+    var(--bg) !important;
+  color: var(--text) !important;
+  font-family: 'Inter', system-ui, sans-serif !important;
+}
+.block-container { padding-top: 2rem !important; }
+
+/* ── Barra de herramientas superior ── */
+[data-testid="stHeader"] {
+  background: oklch(0.19 0.014 60 / 0.92) !important;
+  border-bottom: 1px solid var(--border) !important;
+  backdrop-filter: blur(8px) !important;
+}
+
+/* ── Sidebar ── */
+[data-testid="stSidebar"] {
+  background: var(--bg-1) !important;
+  border-right: 1px solid var(--border) !important;
+}
+[data-testid="stSidebar"] * { color: var(--text-dim) !important; }
+
+/* ── Títulos ── */
+h1 {
+  font-family: 'Cormorant Garamond', serif !important;
+  font-size: 2.2rem !important; font-weight: 600 !important;
+  letter-spacing: 0.02em !important; color: var(--text) !important;
+  line-height: 1.1 !important;
+}
+h2, h3 {
+  font-family: 'Cormorant Garamond', serif !important;
+  font-weight: 600 !important; color: var(--text) !important;
+}
+h2 { font-size: 1.55rem !important; }
+h3 { font-size: 1.2rem !important; }
+
+/* ── Pestañas ── */
+.stTabs [data-baseweb="tab-list"] {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  gap: 0 !important; padding: 3px !important;
+}
+.stTabs [data-baseweb="tab"] {
+  background: transparent !important;
+  color: var(--text-dim) !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important; font-weight: 500 !important;
+  border-radius: 4px !important; border: none !important;
+  padding: 8px 18px !important;
+  transition: color 120ms !important;
+}
+.stTabs [aria-selected="true"] {
+  background: var(--surface-hi) !important;
+  color: var(--accent) !important;
+}
+.stTabs [data-baseweb="tab-highlight"],
+.stTabs [data-baseweb="tab-border"] { display: none !important; }
+
+/* ── Inputs y Selects ── */
+.stTextInput input, .stSelectbox select,
+.stNumberInput input, .stTextArea textarea {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  color: var(--text) !important;
+  border-radius: var(--radius) !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 14px !important;
+  transition: border-color 120ms, box-shadow 120ms !important;
+}
+.stTextInput input:focus, .stSelectbox select:focus,
+.stNumberInput input:focus, .stTextArea textarea:focus {
+  border-color: var(--accent) !important;
+  box-shadow: 0 0 0 3px var(--accent-glow) !important;
+}
+.stTextInput label, .stSelectbox label,
+.stNumberInput label, .stMultiSelect label,
+.stRadio label > div:first-child, .stCheckbox label > div:first-child {
+  color: var(--text-dim) !important;
+  font-size: 11px !important; font-weight: 600 !important;
+  letter-spacing: 0.08em !important; text-transform: uppercase !important;
+}
+
+/* ── Multiselect ── */
+[data-testid="stMultiSelect"] [data-baseweb="select"] > div {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+}
+[data-testid="stMultiSelect"] [data-baseweb="tag"] {
+  background: oklch(0.24 0.05 80) !important;
+  color: var(--accent) !important;
+  border-radius: 999px !important;
+}
+
+/* ── Botones ── */
+.stButton button, .stDownloadButton button, .stFormSubmitButton button {
+  background: var(--surface) !important;
+  color: var(--text) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  font-family: 'Inter', sans-serif !important;
+  font-size: 13px !important; font-weight: 500 !important;
+  transition: all 120ms !important;
+}
+.stButton button:hover, .stDownloadButton button:hover {
+  border-color: var(--border-hi) !important;
+  color: var(--accent) !important;
+}
+.stButton button[kind="primary"],
+.stDownloadButton button[kind="primary"],
+.stFormSubmitButton button[kind="primary"] {
+  background: var(--accent) !important;
+  color: oklch(0.18 0.05 80) !important;
+  border-color: var(--accent) !important;
+  font-weight: 600 !important;
+}
+.stButton button[kind="primary"]:hover {
+  background: var(--accent-hi) !important;
+}
+
+/* ── Métricas ── */
+[data-testid="metric-container"] {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  padding: 14px !important;
+}
+[data-testid="stMetricValue"] {
+  font-family: 'Cormorant Garamond', serif !important;
+  font-size: 30px !important; font-weight: 600 !important;
+  color: var(--accent) !important;
+}
+[data-testid="stMetricLabel"] {
+  font-size: 10px !important; font-weight: 600 !important;
+  letter-spacing: 0.08em !important; text-transform: uppercase !important;
+  color: var(--text-dim) !important;
+}
+
+/* ── Alertas ── */
+.stAlert {
+  background: var(--surface) !important;
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  color: var(--text) !important;
+}
+[data-testid="stNotification"] { border-radius: var(--radius) !important; }
+
+/* ── Expander ── */
+.stExpander {
+  border: 1px solid var(--border) !important;
+  border-radius: var(--radius) !important;
+  background: var(--surface) !important;
+}
+.stExpander summary {
+  color: var(--text-dim) !important;
+  font-size: 12px !important; letter-spacing: 0.04em !important;
+}
+
+/* ── Text area (lista Moxfield, log) ── */
+.stTextArea textarea {
+  background: oklch(0.13 0.01 60) !important;
+  color: var(--text-dim) !important;
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 12px !important; line-height: 1.5 !important;
+}
+
+/* ── Code / caption ── */
+code, .stCode { font-family: 'JetBrains Mono', monospace !important; color: var(--accent) !important; }
+.stCaption { color: var(--text-mute) !important; font-size: 12px !important; }
+
+/* ── Divisor ── */
+hr { border-color: var(--border) !important; }
+
+/* ── Tablas nativas de Streamlit (st.table) ── */
+.stDataFrame, .stTable table {
+  background: var(--bg) !important; color: var(--text) !important;
+  font-family: 'Inter', sans-serif !important;
+}
+
+/* ── Icono de maná ── */
 .ms { font-size: 1.25em; vertical-align: middle; }
 
-/* Tablas estilo Magic */
-.mtg-tabla { width: 100%; border-collapse: collapse; font-size: 0.9em; }
-.mtg-tabla th { background: #1a1a1a; color: #ffd700; padding: 10px; text-align: left; border-bottom: 2px solid #ffd700; position: sticky; top: 0; z-index: 1; font-variant: small-caps; }
-.mtg-tabla td { padding: 5px 10px; border-bottom: 1px solid #2a2a2a; vertical-align: middle; color: #ccc; }
-.mtg-tabla tr:hover td { background: #1e1e1e; }
-.mtg-tabla td:nth-child(5) { font-size: 0.82em; color: #888; }
-.tabla-scroll { max-height: 450px; overflow-y: auto; border: 1px solid #444; border-radius: 8px; background: #111; }
+/* ══ Tabla personalizada MTG ══════════════════════════════════ */
+.mtg-tabla {
+  width: 100%; border-collapse: separate; border-spacing: 0;
+  font-size: 13px; font-family: 'Inter', sans-serif;
+}
+.mtg-tabla th {
+  background: var(--bg-1) !important;
+  color: var(--text-mute) !important;
+  padding: 12px 10px; text-align: left;
+  border-bottom: 1px solid var(--border);
+  position: sticky; top: 0; z-index: 1;
+  font-size: 10px !important; font-weight: 600 !important;
+  letter-spacing: 0.1em !important; text-transform: uppercase !important;
+}
+.mtg-tabla td {
+  padding: 8px 10px;
+  border-bottom: 1px solid oklch(0.22 0.01 60);
+  vertical-align: middle; color: var(--text-dim);
+}
+.mtg-tabla tr:hover td { background: var(--bg-1) !important; cursor: pointer; }
+/* Nombre */
+.mtg-tabla td:nth-child(2) {
+  font-family: 'Cormorant Garamond', serif !important;
+  font-size: 15px !important; font-weight: 600 !important;
+  color: var(--text) !important;
+}
+/* Tipo */
+.mtg-tabla td:nth-child(4) {
+  font-style: italic !important;
+  font-family: 'Cormorant Garamond', serif !important;
+  font-size: 12px !important; color: var(--text-dim) !important;
+}
+/* Set */
+.mtg-tabla td:nth-child(5) {
+  font-family: 'JetBrains Mono', monospace !important;
+  font-size: 11px !important; color: var(--accent) !important;
+}
+.tabla-scroll {
+  max-height: 450px; overflow-y: auto;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-lg);
+  background: var(--bg);
+}
+.tabla-scroll::-webkit-scrollbar { width: 10px; height: 10px; }
+.tabla-scroll::-webkit-scrollbar-track { background: transparent; }
+.tabla-scroll::-webkit-scrollbar-thumb {
+  background: oklch(0.28 0.01 60); border-radius: 5px;
+  border: 2px solid var(--bg-1);
+}
+.tabla-scroll::-webkit-scrollbar-thumb:hover { background: oklch(0.36 0.015 60); }
 
-/* Previsualización de carta */
-.img-preview { border: 1px solid #444; border-radius: 12px; box-shadow: 0 4px 20px rgba(0,0,0,0.8); margin-bottom: 20px; }
+/* ── Previsualización de carta ── */
+.img-preview {
+  border: 1px solid var(--border); border-radius: 12px;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.8); margin-bottom: 20px;
+}
+
+/* ── Scrollbars globales ── */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+  background: oklch(0.28 0.01 60); border-radius: 5px;
+  border: 2px solid var(--bg-1);
+}
+::-webkit-scrollbar-thumb:hover { background: oklch(0.36 0.015 60); }
 </style>
 """, unsafe_allow_html=True)
 
-st.title("🃏 MTG Personal Lab")
+st.markdown("""
+<div style="display:flex;align-items:center;gap:14px;padding:8px 0 20px 0;border-bottom:1px solid var(--border);margin-bottom:20px;">
+  <div style="width:42px;height:42px;border-radius:10px;display:grid;place-items:center;
+    background:radial-gradient(circle at 30% 30%,oklch(0.82 0.14 80),oklch(0.30 0.07 80) 70%);
+    color:oklch(0.20 0.06 80);font-size:24px;font-weight:700;
+    box-shadow:inset 0 1px 0 rgba(255,255,255,0.25),0 4px 14px oklch(0.75 0.13 80 / 0.35);">⌬</div>
+  <div>
+    <div style="font-family:'Cormorant Garamond',serif;font-size:26px;font-weight:600;
+      letter-spacing:0.02em;line-height:1;color:oklch(0.93 0.010 80);">MTG Lab</div>
+    <div style="font-size:11px;color:oklch(0.66 0.012 70);letter-spacing:0.08em;
+      text-transform:uppercase;margin-top:3px;">Forja Personal · GaiteroDade</div>
+  </div>
+</div>
+""", unsafe_allow_html=True)
 
 tabs = st.tabs(["🏗️ Constructor de Mazos", "🔍 Buscador & Mazo Manual", "🖨️ Fabricar PDF"])
 
