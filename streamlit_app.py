@@ -149,7 +149,7 @@ txts_disponibles = sorted([
 
 st.set_page_config(page_title="MTG Forge Lab", page_icon="🃏", layout="wide")
 
-st.markdown("""
+st.html("""
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
@@ -429,9 +429,9 @@ hr { border-color: var(--border) !important; }
 }
 ::-webkit-scrollbar-thumb:hover { background: oklch(0.36 0.015 60); }
 </style>
-""", unsafe_allow_html=True)
+""")
 
-st.markdown("""
+st.html("""
 <div style="display:flex;align-items:center;gap:14px;padding:8px 0 20px 0;border-bottom:1px solid var(--border);margin-bottom:20px;">
   <div style="width:42px;height:42px;border-radius:10px;display:grid;place-items:center;
     background:radial-gradient(circle at 30% 30%,oklch(0.82 0.14 80),oklch(0.30 0.07 80) 70%);
@@ -444,7 +444,7 @@ st.markdown("""
       text-transform:uppercase;margin-top:3px;">Forja Personal · GaiteroDade</div>
   </div>
 </div>
-""", unsafe_allow_html=True)
+""")
 
 tabs = st.tabs(["🏗️ Constructor de Mazos", "🔍 Buscador & Mazo Manual", "🖨️ Fabricar PDF"])
 
