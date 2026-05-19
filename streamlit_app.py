@@ -428,6 +428,12 @@ hr { border-color: var(--border) !important; }
   border: 2px solid var(--bg-1);
 }
 ::-webkit-scrollbar-thumb:hover { background: oklch(0.36 0.015 60); }
+
+/* ── Ocultar sidebar ── */
+[data-testid="stSidebar"],
+[data-testid="collapsedControl"],
+button[kind="header"] { display: none !important; }
+.block-container { max-width: 100% !important; }
 </style>
 """)
 
@@ -802,5 +808,4 @@ with st.expander("🛠️ Consola de Sistema / Estado"):
                 if p.endswith(".pdf"):
                     st.write(f"- `{p}`")
 
-st.sidebar.markdown("---")
-st.sidebar.caption("Creado con la Plantilla OGR para GaiteroDade")
+
