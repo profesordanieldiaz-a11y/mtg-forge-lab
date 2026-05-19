@@ -188,12 +188,9 @@ st.html("""
 }
 .block-container { padding-top: 2rem !important; }
 
-/* ── Barra de herramientas superior ── */
-[data-testid="stHeader"] {
-  background: oklch(0.19 0.014 60 / 0.92) !important;
-  border-bottom: 1px solid var(--border) !important;
-  backdrop-filter: blur(8px) !important;
-}
+/* ── Ocultar barra de herramientas de Streamlit ── */
+[data-testid="stHeader"] { display: none !important; }
+.block-container { padding-top: 1rem !important; }
 
 /* ── Sidebar ── */
 [data-testid="stSidebar"] {
