@@ -137,9 +137,120 @@ def _mazo_manual_a_txt(cartas: list, nombre: str = "Mi Mazo Manual") -> str:
     return "\n".join(lineas)
 
 
+_FRAME_TONES = {
+    "W": ("#f4ecd2", "#a8966b", "#3a2e10"),
+    "U": ("#3478b6", "#1e4f7f", "#eaf3ff"),
+    "B": ("#22201d", "#0b0908", "#d8d4c8"),
+    "R": ("#c44535", "#7c2419", "#fff1e8"),
+    "G": ("#3f8a55", "#1f5232", "#eaf6e6"),
+}
+_RARITY_COLOR = {"common": "#555", "uncommon": "#9faab8", "rare": "#c9a961", "mythic": "#d96a26"}
+
+
+def _oracle_to_html(text: str) -> str:
+    if not text:
+        return "<em style='opacity:0.45'>—</em>"
+    text = text.replace("&", "&amp;").replace("<", "&lt;").replace(">", "&gt;")
+    def _repl(m):
+        s = m.group(1)
+        css = _MANA_CSS.get(s.upper(), s.lower())
+        return f'<i class="ms ms-{css} ms-cost" style="font-size:0.9em;vertical-align:middle;"></i>'
+    text = re.sub(r"\{([^}]+)\}", _repl, text)
+    return text.replace("\n", "<br>")
+
+
+def _card_frame_html(card: dict, traducciones: dict) -> str:
+    name     = card.get("name", "")
+    t        = traducciones.get(name, {})
+    nom_es   = t.get("name_es") or name
+    tipo_es  = t.get("type_es") or card.get("type_line", "")
+    text_es  = t.get("text_es") or card.get("oracle_text", "")
+    cost     = card.get("mana_cost", "")
+    colors   = card.get("colors", [])
+    art_url  = card.get("art_crop", "")
+    power    = card.get("power", "")
+    toughness = card.get("toughness", "")
+    rarity   = card.get("rarity", "common")
+    set_code = card.get("set", "").upper()
+    num      = card.get("collector_number", "")
+    type_line = card.get("type_line", "")
+
+    if "Land" in type_line:
+        bg, border, fg = "#7a6a48", "#3d3422", "#f1ead0"
+    elif "Artifact" in type_line:
+        bg, border, fg = "#a0998a", "#534c3e", "#1a1612"
+    elif len(colors) == 0:
+        bg, border, fg = "#9c9587", "#5f574a", "#1a1612"
+    elif len(colors) >= 2:
+        bg, border, fg = "#d4b25a", "#7a5e1d", "#2a2010"
+    else:
+        bg, border, fg = _FRAME_TONES.get(colors[0], ("#9c9587", "#5f574a", "#1a1612"))
+
+    rarity_col = _RARITY_COLOR.get(rarity, "#666")
+    art_section = (
+        f'<img src="{art_url}" style="width:100%;height:130px;object-fit:cover;display:block;">'
+        if art_url else
+        f'<div style="width:100%;height:130px;background:linear-gradient(135deg,{bg},{border});'
+        f'display:flex;align-items:center;justify-content:center;color:{fg};font-size:10px;opacity:0.6;">{nom_es}</div>'
+    )
+    pt_html = (
+        f'<div style="position:absolute;right:6px;bottom:6px;background:{bg};color:{fg};'
+        f'padding:2px 8px;border-radius:3px;font-size:13px;font-weight:700;'
+        f'box-shadow:inset 0 0 0 1px {border};font-family:Cormorant Garamond,serif;">'
+        f'{power}/{toughness}</div>'
+        if power and toughness else ""
+    )
+    cost_icons = mana_html(cost)
+    text_html  = _oracle_to_html(text_es)
+
+    return f"""
+<div style="display:flex;justify-content:center;padding:4px 0 12px 0;">
+<div style="width:230px;font-family:Inter,sans-serif;box-sizing:border-box;
+  padding:10px;border-radius:11px;
+  background:linear-gradient(180deg,{bg} 0%,{border} 100%);
+  box-shadow:0 0 0 1px {border},0 10px 36px rgba(0,0,0,0.65),inset 0 1px 0 rgba(255,255,255,0.14);">
+  <div style="border-radius:6px;background:#1a160f;padding:6px;display:flex;flex-direction:column;gap:4px;">
+    <div style="display:flex;justify-content:space-between;align-items:center;
+      background:linear-gradient(180deg,{bg} 0%,{border} 100%);
+      padding:4px 8px;border-radius:4px;box-shadow:inset 0 0 0 1px {border};">
+      <span style="font-family:'Cormorant Garamond',serif;font-weight:600;font-size:13px;
+        overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:130px;color:{fg};">{nom_es}</span>
+      <span>{cost_icons}</span>
+    </div>
+    <div style="overflow:hidden;border-top:1px solid rgba(0,0,0,0.6);border-bottom:1px solid rgba(0,0,0,0.6);">
+      {art_section}
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;
+      background:linear-gradient(180deg,{bg} 0%,{border} 100%);
+      padding:3px 8px;border-radius:4px;font-style:italic;font-size:10px;
+      font-family:'Cormorant Garamond',serif;font-weight:600;
+      box-shadow:inset 0 0 0 1px {border};color:{fg};">
+      <span>{tipo_es}</span>
+      <span style="color:{rarity_col};">◆</span>
+    </div>
+    <div style="background:rgba(244,236,210,0.92);color:#2a1e10;
+      padding:6px 8px;border-radius:4px;font-size:10px;
+      font-family:'Cormorant Garamond',serif;line-height:1.35;
+      min-height:64px;position:relative;">
+      {text_html}
+      {pt_html}
+    </div>
+    <div style="font-size:8px;color:rgba(255,255,255,0.45);padding:0 4px;
+      display:flex;justify-content:space-between;font-family:'JetBrains Mono',monospace;">
+      <span>{num} · {set_code}</span>
+      <span style="opacity:0.6;">★ MTG LAB</span>
+    </div>
+  </div>
+</div>
+</div>
+"""
+
+
 # Session state — debe inicializarse antes de que cualquier pestaña se renderice
 if "mi_mazo_manual" not in st.session_state:
     st.session_state["mi_mazo_manual"] = []
+if "carta_preview" not in st.session_state:
+    st.session_state["carta_preview"] = None
 
 # Pre-computar para Tab 3 y la consola (se reutiliza en ambos sitios)
 txts_disponibles = sorted([
@@ -579,19 +690,25 @@ with tabs[1]:
                     else f"{len(resultados_filtrados)} de {len(resultados)} cartas"
                 )
 
-                # Formulario de selección SIEMPRE visible, encima de la tabla
+                # Selectbox fuera del form → actualiza preview sin necesidad de submit
+                nombre_es_elegido = st.selectbox(
+                    f"Seleccionar carta ({total_txt}):",
+                    list(nombres_filtrados.keys()) if nombres_filtrados else ["—"],
+                    key="carta_seleccionada",
+                )
+                if nombre_es_elegido and nombre_es_elegido != "—" and nombres_filtrados:
+                    _carta_en = nombres_filtrados.get(nombre_es_elegido)
+                    _prev = next((c for c in resultados_filtrados if c.get("name") == _carta_en), None)
+                    if _prev:
+                        st.session_state["carta_preview"] = _prev
+
                 with st.form("form_agregar_carta"):
-                    col_sel, col_cant, col_btn = st.columns([4, 1, 1])
-                    with col_sel:
-                        nombre_es_elegido = st.selectbox(
-                            f"Seleccionar carta ({total_txt}):",
-                            list(nombres_filtrados.keys()) if nombres_filtrados else ["—"],
-                        )
+                    col_cant, col_btn = st.columns([1, 2])
                     with col_cant:
                         cantidad = st.number_input("Cant.", min_value=1, max_value=4, value=1)
                     with col_btn:
                         st.markdown("<br>", unsafe_allow_html=True)
-                        agregar = st.form_submit_button("➕ Agregar")
+                        agregar = st.form_submit_button("➕ Agregar al mazo")
                     if agregar and nombres_filtrados:
                         carta_elegida = nombres_filtrados.get(nombre_es_elegido)
                         card_data = next(
@@ -656,6 +773,20 @@ with tabs[1]:
                 st.warning("No se encontraron cartas con ese texto.")
 
     with col_mazo:
+        # ── Vista de carta seleccionada ──────────────────────────
+        _trad = _cargar_traducciones()
+        if st.session_state.get("carta_preview"):
+            st.html(_card_frame_html(st.session_state["carta_preview"], _trad))
+        else:
+            st.html("""
+<div style="border:1px dashed oklch(0.32 0.015 65);border-radius:6px;
+  padding:40px 20px;text-align:center;
+  color:oklch(0.50 0.010 70);font-size:13px;font-family:Inter,sans-serif;">
+  Selecciona una carta para ver su diseño
+</div>""")
+        st.divider()
+
+        # ── Mazo manual ──────────────────────────────────────────
         mazo_m = st.session_state["mi_mazo_manual"]
         total_m = sum(c["copias"] for c in mazo_m)
         hechizos_m = sum(c["copias"] for c in mazo_m if not c["es_tierra"])
