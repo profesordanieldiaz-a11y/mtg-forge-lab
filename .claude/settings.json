@@ -1,0 +1,13 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(Get-ChildItem -Path \"d:\\\\Drive Profe Dani Diaz\\\\IA VS\\\\Proyectos GaiteroDade\\\\01_MTG\" -Recurse -Force)",
+      "Bash(Select-Object FullName, Length, LastWriteTime)",
+      "Bash(ConvertTo-Json)",
+      "Bash(git add *)",
+      "Bash(git commit -m ' *)",
+      "Bash(git push *)",
+      "Bash(Select-String -NotMatch \"\\\\.venv|__pycache__\")"
+    ]
+  }
+}
