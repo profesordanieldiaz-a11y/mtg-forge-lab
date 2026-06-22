@@ -14,6 +14,10 @@ output/cartas/
 
 # Datos locales que no son de repositorio
 data/mazo_*.txt
+data/cards_*.json
+data/mtg_translations_es.json
+data/Cartas de todos los colores.json
+data/artworks/
 
 # Windows
 desktop.ini

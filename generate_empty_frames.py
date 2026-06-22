@@ -36,7 +36,8 @@ COLOR_THEMES = {
     "azul":   {"tb_fill": (182,214,232), "tb_outline": ( 30, 70,132), "tl_fill": ( 32, 68,118), "tl_outline": ( 52, 98,152)},
     "verde":  {"tb_fill": (198,212,172), "tb_outline": ( 26, 60, 26), "tl_fill": ( 30, 58, 26), "tl_outline": ( 52, 92, 38)},
     "blanco": {"tb_fill": (234,226,208), "tb_outline": (126,116, 92), "tl_fill": (112,102, 82), "tl_outline": (152,142,118)},
-    "cafe":   {"tb_fill": (210,198,172), "tb_outline": ( 88, 66, 38), "tl_fill": ( 68, 50, 28), "tl_outline": (108, 80, 46)},
+    "cafe":        {"tb_fill": (210,198,172), "tb_outline": ( 88, 66, 38), "tl_fill": ( 68, 50, 28), "tl_outline": (108, 80, 46)},
+    "multicolor":  {"tb_fill": (228,210,152), "tb_outline": ( 92, 68, 18), "tl_fill": (140,102, 24), "tl_outline": (196,154, 56)},
 }
 
 def rrect(draw, xy, r, fill=None, outline=None, width=1):
@@ -84,7 +85,7 @@ def make_empty_frame(color: str, out_path: str) -> None:
 if __name__ == "__main__":
     os.makedirs(MARCOS_DIR, exist_ok=True)
     print("[*] Generando marcos vacios...")
-    for color in ["negro", "rojo", "azul", "verde", "blanco", "cafe"]:
+    for color in ["negro", "rojo", "azul", "verde", "blanco", "cafe", "multicolor"]:
         out = os.path.join(MARCOS_DIR, f"marco_{color}_vacio.png")
         make_empty_frame(color, out)
-    print(f"\n[OK] 6 marcos guardados en assets/marcos/")
+    print(f"\n[OK] 7 marcos guardados en assets/marcos/")

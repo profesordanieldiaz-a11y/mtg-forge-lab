@@ -114,6 +114,13 @@ COLOR_THEMES = {
         "tl_fill":    ( 68,  50,  28),
         "tl_outline": (108,  80,  46),
     },
+    "multicolor": {
+        "tb_fill":    (228, 210, 152),
+        "tb_outline": ( 92,  68,  18),
+        "tb_text":    ( 24,  18,   6),
+        "tl_fill":    (140, 102,  24),
+        "tl_outline": (196, 154,  56),
+    },
 }
 
 # ─────────────────────────────────────────────────────────────
@@ -342,6 +349,11 @@ def draw_text_line(img, draw, runs, x, y, font, text_color=(224, 214, 194)):
 # ─────────────────────────────────────────────────────────────
 # DESCARGA
 # ─────────────────────────────────────────────────────────────
+def _safe_artwork_name(name: str) -> str:
+    for ch in (" ", "/", "'", ",", ":", '"', "?", "!"):
+        name = name.replace(ch, "_")
+    return name.strip("_")
+
 def fetch_art_crop(large_url: str):
     url = large_url.replace("/large/", "/art_crop/")
     try:
@@ -351,6 +363,16 @@ def fetch_art_crop(large_url: str):
     except Exception as e:
         print(f"    [!] Arte: {e}")
     return None
+
+def load_art(card_name: str, image_url: str):
+    """Carga el arte: primero data/artworks/ local, luego Scryfall."""
+    local = os.path.join(DATA_DIR, "artworks", _safe_artwork_name(card_name) + ".jpg")
+    if os.path.exists(local):
+        try:
+            return Image.open(local).convert("RGB")
+        except Exception:
+            pass
+    return fetch_art_crop(image_url) if image_url else None
 
 def fetch_scryfall(name: str):
     url = f"https://api.scryfall.com/cards/named?exact={requests.utils.quote(name)}"
@@ -406,7 +428,7 @@ def make_card_old(name_orig: str, tr: dict, image_url: str,
     elif len(unique_colors) == 0:
         color = "cafe"   # incoloro/artefacto
     else:
-        color = "cafe"   # multicolor → frame dorado/café por defecto
+        color = "multicolor"
 
     frame_path = os.path.join(MARCOS_DIR, f"marco_{color}_vacio.png")
     if os.path.exists(frame_path):
@@ -431,7 +453,7 @@ def make_card_old(name_orig: str, tr: dict, image_url: str,
         draw_mana_cost(img, draw, mana_str, IXR - 8, (TT + TB) // 2, r=11)
 
     # ── Arte ─────────────────────────────────────────────────
-    art = fetch_art_crop(image_url) if image_url else None
+    art = load_art(name_orig, image_url)
     if art:
         place_art(img, art, IX + 1, AT + 1, IXR - 1, AB - 1)
         art_shadow(img, IX + 1, IXR - 1, AB - 1, height=50)
