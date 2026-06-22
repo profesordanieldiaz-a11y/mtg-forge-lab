@@ -22,10 +22,12 @@ Revisión completa del proyecto por Merlin. 10 fixes aplicados en commit `5157fe
 - `card_list_parser.py`: parser plain rechaza nombres <3 chars o count >99
 - `CLAUDE.md`: comandos Linux añadidos + notas fuentes/tkinter
 
-### Pendiente (necesita decisión de Daniel)
+### Segunda ronda — decisiones ejecutadas (commits `0629f9e`, `cb6a6fa`)
 
-1. **JSONs en git** (`data/cards_*.json`, ~16 MB): ¿moverlos a `.gitignore` y regenerar con `download_card_database.py`?
-2. **Frame multicolor**: ¿crear `marco_multicolor_vacio.png` propio (estilo oro) o mantener frame `cafe`?
-3. **Artworks locales**: ¿conectar `download_artworks.py` con el renderer para no depender de Scryfall en cada generación?
-4. **Entorno objetivo**: ¿Linux como principal? Define si vale la pena (ya está arreglado `make_land_cards.py`).
-5. **Maná híbrido/Phyrexiano**: ¿irrelevante en eras 93-03? Si confirmas, el bug de color híbrido se puede cerrar.
+- **JSONs fuera de git** — `data/cards_*.json`, `mtg_translations_es.json` y `data/artworks/` movidos a `.gitignore`. El repo bajó ~543k líneas. Regenerar con `download_card_database.py` / `download_artworks.py`.
+- **Frame multicolor dorado** — `marco_multicolor_vacio.png` generado (paleta oro/dual). Cartas con >1 color ya usan este frame en vez del `cafe` incorrecto.
+- **Artworks locales conectados** — nueva función `load_art()` en `make_cards_old_border.py`: busca primero en `data/artworks/<nombre>.jpg`, solo va a Scryfall si no existe.
+- **Entorno Linux confirmado** — `make_land_cards.py` ya tiene fallback de fuentes.
+- **Bug maná híbrido cerrado** — irrelevante: proyecto solo trabaja con Old School (93–03) y Mid School (95–03).
+
+**Estado final: PENDIENTES.md completamente resuelto. Sin items abiertos.**
