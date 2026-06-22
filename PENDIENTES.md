@@ -3,7 +3,7 @@ _Auditoría 2026-06-18_
 
 ## 🐛 Bugs
 
-- **[media]** `make_cards_old_border.py:401-409` y `make_cards_old_border.py:163-173` (`_folder_color`) — **Clasificación de color incompleta / incoherente entre frame y carpeta.** La detección solo captura `re.findall(r"\{([BWURGX])\}", ...)`, es decir maná de un único símbolo de color básico. Esto provoca dos fallos: (1) las cartas **multicolor** se guardan en la carpeta `output/cartas/multicolor/` (según `_folder_color`) pero se renderizan con el frame **`cafe`** (según `make_card_old`, que asigna `color="cafe"` para >1 color) → frame incorrecto. (2) El maná **híbrido/Phyrexiano** (`{W/U}`, `{2/W}`, `{B/P}`) y el genérico-con-color no se detectan, así que cartas claramente de color caen en `cafe` (incoloro). Fix: unificar la lógica en una sola función que use `colors`/`color_identity` de Scryfall (ya disponible en el JSON) en vez de parsear `mana_cost`, y crear un frame real para `multicolor` (hoy no existe `marco_multicolor_vacio.png`).
+- ~~**[media]** Clasificación de color multicolor / frame incorrecto~~ ✅ **RESUELTO 2026-06-22** — `marco_multicolor_vacio.png` creado (paleta oro/dual); cartas multicolor ya usan frame correcto. El maná híbrido/Phyrexiano es **irrelevante**: proyecto solo trabaja con Old School (93–03) y Mid School (95–03).
 
 - **[media]** `streamlit_app.py:7` — **Import sin uso real / riesgo de error en arranque.** Se importa `buscar_cartas_db` desde `deck_builder` pero nunca se usa (código muerto). Más relevante: si `deck_builder.py` fallara al importar (p. ej. falta `requests`), toda la app cae en el `import` de la línea 7. Fix: eliminar `buscar_cartas_db` del import.
 
