@@ -133,11 +133,12 @@ def _parse_line(line: str, fmt: str, section: str):
     # Plain text: solo cantidad + nombre
     m = _RE_PLAIN.match(line)
     if m:
+        count = int(m.group(1))
         name = _clean_name(m.group(2))
-        if name:
+        if name and len(name) >= 3 and count <= 99:
             return {
                 "name":             name,
-                "count":            int(m.group(1)),
+                "count":            count,
                 "set_code":         None,
                 "collector_number": None,
                 "foil":             False,

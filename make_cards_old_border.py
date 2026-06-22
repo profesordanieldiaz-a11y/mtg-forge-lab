@@ -547,7 +547,10 @@ def main():
     os.chdir(SCRIPT_DIR)
 
     print("[*] Cargando traducciones...")
-    with open(os.path.join(DATA_DIR, "mtg_translations_es.json"), encoding="utf-8") as f:
+    trans_path = os.path.join(DATA_DIR, "mtg_translations_es.json")
+    if not os.path.exists(trans_path):
+        sys.exit(f"[!] No se encontró {trans_path}\n    Ejecuta primero: python generate_all_cards.py")
+    with open(trans_path, encoding="utf-8") as f:
         translations = json.load(f)
 
     print("[*] Cargando deck...")
@@ -574,9 +577,12 @@ def main():
             deck = json.load(f)
         deck_name = deck.get("name", "Mazo")
         entries_raw = deck.get("entries", {})
-        scryfall_entries = (entries_raw.get("mainboard")
-                            or entries_raw.get("columna")
-                            or next(iter(entries_raw.values()), []))
+        if "mainboard" in entries_raw:
+            scryfall_entries = entries_raw["mainboard"]
+        elif "columna" in entries_raw:
+            scryfall_entries = entries_raw["columna"]
+        else:
+            scryfall_entries = next(iter(entries_raw.values()), [])
         for entry in scryfall_entries:
             digest = entry.get("card_digest")
             if not digest:

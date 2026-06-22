@@ -196,18 +196,25 @@ def _gt_translate(text: str) -> str:
 def _fetch_scryfall_es(name: str):
     """Intenta obtener la carta en español desde Scryfall."""
     url = f"https://api.scryfall.com/cards/named?exact={requests.utils.quote(name)}&lang=es"
-    try:
-        r = requests.get(url, timeout=10)
-        if r.status_code == 200:
-            d = r.json()
-            if d.get("printed_text"):   # Tiene versión impresa en español
-                return {
-                    "name_es":  d.get("printed_name") or name,
-                    "type_es":  d.get("printed_type_line") or "",
-                    "text_es":  d.get("printed_text") or "",
-                }
-    except Exception:
-        pass
+    for attempt in range(3):
+        try:
+            r = requests.get(url, timeout=10)
+            if r.status_code == 429:
+                wait = 2 ** attempt
+                print(f"    [!] Scryfall 429 — esperando {wait}s...")
+                time.sleep(wait)
+                continue
+            if r.status_code == 200:
+                d = r.json()
+                if d.get("printed_text"):
+                    return {
+                        "name_es":  d.get("printed_name") or name,
+                        "type_es":  d.get("printed_type_line") or "",
+                        "text_es":  d.get("printed_text") or "",
+                    }
+            break
+        except Exception:
+            break
     return None
 
 

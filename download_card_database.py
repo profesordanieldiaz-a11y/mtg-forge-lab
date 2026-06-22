@@ -39,7 +39,7 @@ CAMPOS = {
     "name", "mana_cost", "cmc", "type_line", "oracle_text",
     "colors", "color_identity", "set", "collector_number",
     "rarity", "power", "toughness", "keywords", "image_uris",
-    "layout", "legalities",
+    "layout",
 }
 
 

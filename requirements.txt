@@ -1,5 +1,9 @@
-streamlit
-Pillow
-reportlab
-requests
-deep-translator
+streamlit>=1.31,<2.0
+Pillow>=10.0,<13.0
+reportlab>=3.6,<5.0
+requests>=2.28
+deep-translator>=1.11
+
+# Dev / testing (no necesario para ejecutar la app)
+# pytest>=7.0
+# tkinter: built-in en Python — necesario solo para load_card_list_clipboard()

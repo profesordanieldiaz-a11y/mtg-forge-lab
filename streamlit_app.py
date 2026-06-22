@@ -4,7 +4,7 @@ import os
 import re
 import subprocess
 import sys
-from deck_builder import ERAS, STAPLES, construir_mazo, a_moxfield, buscar_cartas_db, _cargar_db_local
+from deck_builder import ERAS, STAPLES, construir_mazo, a_moxfield, _cargar_db_local
 from translator import translate_and_update_json
 
 SCRIPT_DIR = os.path.dirname(os.path.abspath(__file__))
@@ -264,7 +264,7 @@ st.html("""
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,600&family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mana-font@latest/css/mana.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/mana-font@0.14.0/css/mana.min.css">
 <style>
 /* ══ MTG Lab Design System ══════════════════════════════════════ */
 :root {
@@ -875,6 +875,7 @@ with tabs[2]:
                     text=True,
                     encoding="utf-8",
                     errors="replace",
+                    timeout=600,
                 )
 
             if resultado.returncode == 0:
@@ -918,10 +919,8 @@ st.divider()
 # PIE — Consola / Estado
 # ════════════════════════════════════════════════════════════════
 with st.expander("🛠️ Consola de Sistema / Estado"):
-    json_path = os.path.join(DATA_DIR, "mtg_translations_es.json")
-    if os.path.exists(json_path):
-        with open(json_path, "r", encoding="utf-8") as f:
-            traducciones = json.load(f)
+    traducciones = _cargar_traducciones()
+    if traducciones:
         st.write(f"Cartas en base de datos local: **{len(traducciones)}**")
 
     col_a, col_b = st.columns(2)

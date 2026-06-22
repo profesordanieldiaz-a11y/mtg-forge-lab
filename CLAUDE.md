@@ -5,8 +5,11 @@ This file provides guidance to Claude Code (claude.ai/code) when working with co
 ## Comandos principales
 
 ```bash
-# Activar entorno virtual (Windows)
+# Activar entorno virtual
+# Windows:
 .venv\Scripts\activate
+# Linux (PC Gamer Ubuntu):
+source .venv/bin/activate
 
 # Instalar dependencias
 pip install -r requirements.txt
@@ -77,4 +80,10 @@ Los marcos (`.png` en `assets/marcos/`) son la "plantilla" visual de cada color.
 
 ### Límites de la API Scryfall
 
-El script respeta el rate limit con `time.sleep(0.12)` entre llamadas. No hay autenticación requerida. Si Scryfall devuelve error 429, el proceso se detiene — relanzar con `--batch` para continuar por partes.
+El script respeta el rate limit con `time.sleep(0.12)` entre llamadas. No hay autenticación requerida. `translator.py` reintenta hasta 3 veces con backoff exponencial ante 429; `generate_all_cards.py` se puede relanzar con `--batch` para continuar por partes.
+
+### Notas Linux (PC Gamer Ubuntu)
+
+- `make_cards_old_border.py` y `make_land_cards.py` tienen fallback de fuentes Linux (DejaVu / Liberation / FreeSans). No necesitan fuentes de Windows.
+- Si no existe `data/mtg_translations_es.json`, `make_cards_old_border.py` muestra un error claro pidiendo ejecutar `generate_all_cards.py` primero.
+- `tkinter` (usado por `load_card_list_clipboard`) puede faltar en entornos headless: `sudo apt install python3-tk`.
