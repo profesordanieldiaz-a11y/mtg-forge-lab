@@ -5,13 +5,13 @@ _Auditoría 2026-06-18_
 
 - ~~**[media]** Clasificación de color multicolor / frame incorrecto~~ ✅ **RESUELTO 2026-06-22** — `marco_multicolor_vacio.png` creado (paleta oro/dual); cartas multicolor ya usan frame correcto. El maná híbrido/Phyrexiano es **irrelevante**: proyecto solo trabaja con Old School (93–03) y Mid School (95–03).
 
-- **[media]** `streamlit_app.py:7` — **Import sin uso real / riesgo de error en arranque.** Se importa `buscar_cartas_db` desde `deck_builder` pero nunca se usa (código muerto). Más relevante: si `deck_builder.py` fallara al importar (p. ej. falta `requests`), toda la app cae en el `import` de la línea 7. Fix: eliminar `buscar_cartas_db` del import.
+- ~~**[media]** `streamlit_app.py:7` — Import sin uso real `buscar_cartas_db`.~~ ✅ **RESUELTO 2026-06-22** — `buscar_cartas_db` ya no aparece en el import de `streamlit_app.py:7`. Verificado en código actual.
 
 - **[baja]** `card_list_parser.py:33` (`_RE_PLAIN`) — **El parser "plain" puede tragarse líneas que empiezan por dígito y no son cartas.** Cualquier línea `^\d+\s+.+` se interpreta como carta (p. ej. un comentario "4 copies recommended" o "2 sideboard cards"). En el flujo actual es de bajo impacto porque las listas vienen de generadores propios, pero conviene anclar mejor o validar el nombre. Fix: validar contra DB local o exigir formato más estricto en modo plain.
 
-- **[baja]** `make_cards_old_border.py:434` (`fetch_art_crop`) — **El arte siempre se re-descarga de Scryfall en cada generación**, incluso si ya existe `data/artworks/<nombre>.jpg` (que `download_artworks.py` precisamente genera). El docstring de `generate_all_cards.py` promete "usa data/artworks/<nombre>.jpg si existen (sin llamar a Scryfall)", pero `make_card_old` nunca lee esa carpeta: siempre va a la red. Fix: en `make_card_old`/`generate_card`, comprobar primero el artwork local antes de `fetch_art_crop`.
+- ~~**[baja]** `make_cards_old_border.py:434` (`fetch_art_crop`) — El arte siempre se re-descarga de Scryfall.~~ ✅ **RESUELTO 2026-06-22** — `load_art(card_name, image_url)` en línea 367 primero busca `data/artworks/<nombre>.jpg` local y solo llama a `fetch_art_crop` si no existe. `make_card_old` usa `load_art` en línea 456.
 
-- **[baja]** `make_cards_old_border.py:577-579` — **Selección frágil de la sección del JSON Scryfall.** `entries_raw.get("mainboard") or entries_raw.get("columna") or next(iter(entries_raw.values()), [])`: si `mainboard` existe pero está vacío (`[]`), el `or` salta al siguiente y puede coger una sección equivocada (sideboard). Fix: comprobar presencia de clave con `in`, no truthiness.
+- ~~**[baja]** `make_cards_old_border.py:577-579` — Selección frágil de sección JSON con `or` (truthiness).~~ ✅ **RESUELTO 2026-06-22** — Líneas 602-607 ya usan `"mainboard" in entries_raw` (comprobación de clave) en lugar de truthiness. `mainboard` vacío `[]` ya no salta al siguiente.
 
 ## ⚠️ Incoherencias / riesgos
 
