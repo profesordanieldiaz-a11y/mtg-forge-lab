@@ -23,7 +23,7 @@ _Auditoría 2026-06-18_
 
 - **[baja]** **Dependencias no declaradas.** `test_card_list_parser.py` documenta uso con `pytest` pero `pytest` no está en `requirements.txt`. `card_list_parser.py:169` usa `tkinter` (clipboard) que no siempre viene instalado en Linux headless. No son bloqueantes (hay fallbacks), pero conviene documentarlos como extras.
 
-- **[baja]** `download_card_database.py:38-43` — **`legalities` se conserva en cada carta** pero ninguna parte del proyecto lo usa. Es uno de los campos más voluminosos de Scryfall y multiplica el tamaño de los JSON. Fix: quitar `legalities` (y revisar si `keywords`/`color_identity` se usan) de `CAMPOS`.
+- ~~**[baja]** `download_card_database.py:38-43` — **`legalities` se conserva en cada carta** pero ninguna parte del proyecto lo usa. Es uno de los campos más voluminosos de Scryfall y multiplica el tamaño de los JSON. Fix: quitar `legalities` (y revisar si `keywords`/`color_identity` se usan) de `CAMPOS`.~~ ✅ **RESUELTO 2026-07-01** — verificado en código actual: `CAMPOS` (`download_card_database.py:38-43`) ya no incluye `legalities`; `grep -rn "legalities" --include="*.py"` no arroja usos en el proyecto. Sin cambios de código necesarios (drift del pendiente).
 
 - **[baja]** **`packages.txt` instala fuentes que no se usan como primera opción.** Declara `fonts-dejavu-core` y `fonts-liberation`; el código las busca, correcto. Coherente, solo verificar que el devcontainer (`pip3 install --user`) realmente las tenga disponibles tras `apt install`.
 
@@ -31,9 +31,9 @@ _Auditoría 2026-06-18_
 
 ## ✨ Mejoras
 
-- **[seguridad/robustez]** `streamlit_app.py:866-889` — La app ejecuta `subprocess.run([sys.executable, fabricador, "--input", ruta_fabricar])`. Está bien que use `sys.executable` y lista de args (no shell). Pero `ruta_fabricar` sale de un `selectbox` poblado por `os.listdir(DATA_DIR)`, así que es seguro. Mejora menor: añadir `timeout=` al `subprocess.run` para que un cuelgue de red no bloquee la UI indefinidamente.
+- ~~**[seguridad/robustez]** `streamlit_app.py:866-889` — La app ejecuta `subprocess.run([sys.executable, fabricador, "--input", ruta_fabricar])`. Está bien que use `sys.executable` y lista de args (no shell). Pero `ruta_fabricar` sale de un `selectbox` poblado por `os.listdir(DATA_DIR)`, así que es seguro. Mejora menor: añadir `timeout=` al `subprocess.run` para que un cuelgue de red no bloquee la UI indefinidamente.~~ ✅ **RESUELTO 2026-07-01** — verificado en código actual: `subprocess.run(...)` en `streamlit_app.py:878` ya trae `timeout=600`. Sin cambios de código necesarios (drift del pendiente).
 
-- **[rendimiento]** `streamlit_app.py:628`, `:777` y `:920-924` — Las traducciones se leen de disco varias veces por render. `_cargar_traducciones()` ya usa `@st.cache_resource` (bien), pero el bloque de la consola (`:920`) abre y parsea el JSON otra vez sin caché. Fix: reutilizar `_cargar_traducciones()`.
+- ~~**[rendimiento]** `streamlit_app.py:628`, `:777` y `:920-924` — Las traducciones se leen de disco varias veces por render. `_cargar_traducciones()` ya usa `@st.cache_resource` (bien), pero el bloque de la consola (`:920`) abre y parsea el JSON otra vez sin caché. Fix: reutilizar `_cargar_traducciones()`.~~ ✅ **RESUELTO 2026-07-01** — verificado en código actual: el bloque de la consola (`streamlit_app.py:922`) ya llama a `_cargar_traducciones()` en vez de abrir el JSON de nuevo. Sin cambios de código necesarios (drift del pendiente).
 
 - **[rendimiento]** `streamlit_app.py:631` — `_buscar_bilingue(..., max_results=500)` recorre toda la DB en Python por cada pulsación de tecla del buscador. Con ~5700 cartas es tolerable, pero para fluidez se podría indexar (precomputar minúsculas) o usar `@st.cache_data` sobre la query.
 
@@ -41,7 +41,7 @@ _Auditoría 2026-06-18_
 
 - **[estructura]** Hay **duplicación masiva de constantes** (dimensiones `OUT_W/OUT_H/PAD/IX/...`, `MANA_COL`, `COLOR_THEMES`, `rrect`, `place_art`, `art_shadow`, `fit_font`) repetidas en `make_cards_old_border.py`, `make_land_cards.py`, `generate_empty_frames.py`, `generate_land_frames.py`. Fix: extraer a un módulo común `card_layout.py`.
 
-- **[validación]** `make_cards_old_border.py:550` — Si `mtg_translations_es.json` no existe, el `open(...)` peta sin mensaje claro. Fix: comprobar existencia y dar instrucción (como hace `load_cards` en `generate_all_cards.py`).
+- ~~**[validación]** `make_cards_old_border.py:550` — Si `mtg_translations_es.json` no existe, el `open(...)` peta sin mensaje claro. Fix: comprobar existencia y dar instrucción (como hace `load_cards` en `generate_all_cards.py`).~~ ✅ **RESUELTO 2026-07-01** — verificado en código actual: `make_cards_old_border.py:572-576` ya comprueba `os.path.exists(trans_path)` y hace `sys.exit(...)` con instrucción de ejecutar `generate_all_cards.py` primero. Sin cambios de código necesarios (drift del pendiente).
 
 - **[ux]** `streamlit_app.py` Tab 3 — El log del subproceso solo se muestra al terminar (no streaming). Para procesos de varios minutos, el usuario no ve progreso. Mejora opcional: streaming de `stdout`.
 
