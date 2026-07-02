@@ -88,26 +88,45 @@ _ES_EN = {
     "vida": "life",
 }
 
-def _buscar_bilingue(query: str, era_key: str, traducciones: dict, max_results: int = 30) -> list:
-    """Busca cartas en inglés Y en español, expandiendo términos MTG al inglés equivalente."""
+@st.cache_data
+def _indice_busqueda_bilingue(era_key: str) -> list:
+    """Precomputa, por carta, los campos en minúsculas usados por _buscar_bilingue."""
     db = _cargar_db_local(era_key)
+    traducciones = _cargar_traducciones()
+    indice = []
+    for carta in db:
+        name = carta.get("name", "")
+        t = traducciones.get(name, {})
+        indice.append((
+            name.lower(),
+            carta.get("type_line", "").lower(),
+            (carta.get("oracle_text") or "").lower(),
+            (t.get("name_es") or "").lower(),
+            (t.get("type_es") or "").lower(),
+            (t.get("text_es") or "").lower(),
+        ))
+    return indice
+
+
+def _buscar_bilingue(query: str, era_key: str, max_results: int = 30) -> list:
+    """Busca cartas en inglés Y en español, expandiendo términos MTG al inglés equivalente."""
     q = query.lower().strip()
     if not q:
         return []
+    db = _cargar_db_local(era_key)
+    indice = _indice_busqueda_bilingue(era_key)
     en_eq = _ES_EN.get(q)
     resultados = []
     vistos = set()
-    for carta in db:
+    for carta, (name_lower, type_lower, oracle, name_es, type_es, text_es) in zip(db, indice):
         name = carta.get("name", "")
-        oracle = (carta.get("oracle_text") or "").lower()
-        t = traducciones.get(name, {})
-        if (q in name.lower() or
-                q in carta.get("type_line", "").lower() or
+        if (q in name_lower or
+                q in type_lower or
                 q in oracle or
                 (en_eq and en_eq in oracle) or
-                q in (t.get("name_es") or "").lower() or
-                q in (t.get("type_es") or "").lower() or
-                q in (t.get("text_es") or "").lower()):
+                q in name_es or
+                q in type_es or
+                q in text_es):
             if name not in vistos:
                 resultados.append(carta)
                 vistos.add(name)
@@ -628,7 +647,7 @@ with tabs[1]:
         traducciones_db = _cargar_traducciones()
 
         if query_busq.strip():
-            resultados = _buscar_bilingue(query_busq, era_busq, traducciones_db, max_results=500)
+            resultados = _buscar_bilingue(query_busq, era_busq, max_results=500)
             if resultados:
                 # Mapa nombre_es → nombre_en para todos los resultados
                 nombres_es_map_total = {

@@ -27,7 +27,7 @@ _Auditoría 2026-06-18_
 
 - **[baja]** **`packages.txt` instala fuentes que no se usan como primera opción.** Declara `fonts-dejavu-core` y `fonts-liberation`; el código las busca, correcto. Coherente, solo verificar que el devcontainer (`pip3 install --user`) realmente las tenga disponibles tras `apt install`.
 
-- **[baja]** `streamlit_app.py:266-267` — **Dependencia de CDNs externos** (`fonts.googleapis.com`, `cdn.jsdelivr.net/npm/mana-font@latest`). El `@latest` puede cambiar sin aviso y romper iconos; además sin red no hay iconos de maná. Fix: fijar versión de `mana-font` y/o servir local.
+- ~~**[baja]** `streamlit_app.py:266-267` — **Dependencia de CDNs externos** (`fonts.googleapis.com`, `cdn.jsdelivr.net/npm/mana-font@latest`). El `@latest` puede cambiar sin aviso y romper iconos; además sin red no hay iconos de maná. Fix: fijar versión de `mana-font` y/o servir local.~~ ✅ **RESUELTO 2026-07-01** (verificado, drift) — `streamlit_app.py:267` ya usa `mana-font@0.14.0` pineado (no `@latest`). Ya estaba resuelto de una sesión previa (ver `📓 Notas MTG/README.md:18`); solo se cerraba el drift aquí.
 
 ## ✨ Mejoras
 
@@ -35,7 +35,7 @@ _Auditoría 2026-06-18_
 
 - ~~**[rendimiento]** `streamlit_app.py:628`, `:777` y `:920-924` — Las traducciones se leen de disco varias veces por render. `_cargar_traducciones()` ya usa `@st.cache_resource` (bien), pero el bloque de la consola (`:920`) abre y parsea el JSON otra vez sin caché. Fix: reutilizar `_cargar_traducciones()`.~~ ✅ **RESUELTO 2026-07-01** — verificado en código actual: el bloque de la consola (`streamlit_app.py:922`) ya llama a `_cargar_traducciones()` en vez de abrir el JSON de nuevo. Sin cambios de código necesarios (drift del pendiente).
 
-- **[rendimiento]** `streamlit_app.py:631` — `_buscar_bilingue(..., max_results=500)` recorre toda la DB en Python por cada pulsación de tecla del buscador. Con ~5700 cartas es tolerable, pero para fluidez se podría indexar (precomputar minúsculas) o usar `@st.cache_data` sobre la query.
+- ~~**[rendimiento]** `streamlit_app.py:631` — `_buscar_bilingue(..., max_results=500)` recorre toda la DB en Python por cada pulsación de tecla del buscador. Con ~5700 cartas es tolerable, pero para fluidez se podría indexar (precomputar minúsculas) o usar `@st.cache_data` sobre la query.~~ ✅ **RESUELTO 2026-07-01** — nueva función `_indice_busqueda_bilingue(era_key)` cacheada con `@st.cache_data` precomputa nombre/tipo/oracle/traducciones en minúsculas una sola vez por era (no por cada tecla). `_buscar_bilingue` ahora itera ese índice en paralelo con la DB (`zip`) en vez de hacer `.lower()` al vuelo. El índice cachea solo strings (no los dicts de carta completos) para evitar que Streamlit los pickle-copie en cada render. Mismo comportamiento verificado (mismos resultados para varias queries, incluido el corte por `max_results`).
 
 - **[robustez]** `translator.py` y `make_cards_old_border.py` — Las llamadas a Scryfall (`requests.get`) sin reintento/backoff (solo `download_card_database.py`/`deck_builder.py` lo tienen). Ante un 429 puntual, la traducción o el arte simplemente fallan en silencio. Fix: reusar `_request_with_backoff`.
 
