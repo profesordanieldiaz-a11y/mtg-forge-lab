@@ -32,6 +32,10 @@ python make_land_cards.py
 # ── Desde un mazo específico (.txt en formato Moxfield/MTGO) ───────
 python make_cards_old_border.py data/mazo_burn_mid_school.txt
 
+# ── Interfaz web (Streamlit, UI principal) ─────────────────────────
+streamlit run streamlit_app.py     # abre en http://localhost:8501
+# En Windows hay lanzador: lanzar_mtg.bat (activa .venv y lanza en :8501)
+
 # ── Utilidades ─────────────────────────────────────────────────────
 python generate_empty_frames.py    # regenerar marcos vacíos en assets/marcos/
 python generate_land_frames.py     # regenerar marcos de tierras
@@ -52,6 +56,13 @@ generate_all_cards.py       → orquestador principal (lee JSON, llama a make_ca
 
 make_cards_old_border.py    → también puede usarse directamente con una lista .txt
        └── card_list_parser.py       → parsea formatos Moxfield / Arena / MTGO / plain text
+
+streamlit_app.py            → UI web principal (3 pestañas: Constructor de Mazos,
+       │                       Buscador bilingüe EN/ES, Fabricar PDF)
+       ├── deck_builder.py           → importa ERAS, STAPLES, construir_mazo,
+       │                               a_moxfield, _cargar_db_local
+       └── translator.py             → importa translate_and_update_json
+       (la pestaña Fabricar PDF lanza make_cards_old_border.py vía subprocess)
 ```
 
 ### Dimensiones y zonas de la carta (500×700 px)

@@ -25,6 +25,7 @@ Revisión completa del proyecto por Merlin. 10 fixes aplicados en commit `5157fe
 ### Segunda ronda — decisiones ejecutadas (commits `0629f9e`, `cb6a6fa`)
 
 - **JSONs fuera de git** — `data/cards_*.json`, `mtg_translations_es.json` y `data/artworks/` movidos a `.gitignore`. El repo bajó ~543k líneas. Regenerar con `download_card_database.py` / `download_artworks.py`.
+  - ⚠️ **Corrección (2026-07-14, revisión Merlin):** el destrackeo quedó a medias. Los 4 JSONs sí salieron del índice, pero los **5.702 JPGs de `data/artworks/` siguen trackeados** (`.gitignore` solo evita archivos nuevos, nunca se corrió `git rm --cached`; `.git` pesa 548 MB). Pendiente de Daniel: `git rm -r --cached data/artworks/` + commit. Detalle en `PENDIENTES.md` y `PLAN_MEJORA.md`.
 - **Frame multicolor dorado** — `marco_multicolor_vacio.png` generado (paleta oro/dual). Cartas con >1 color ya usan este frame en vez del `cafe` incorrecto.
 - **Artworks locales conectados** — nueva función `load_art()` en `make_cards_old_border.py`: busca primero en `data/artworks/<nombre>.jpg`, solo va a Scryfall si no existe.
 - **Entorno Linux confirmado** — `make_land_cards.py` ya tiene fallback de fuentes.

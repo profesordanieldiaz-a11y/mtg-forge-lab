@@ -21,6 +21,9 @@ from reportlab.lib.units import mm
 import requests, json, re, os, math, sys, argparse
 from card_list_parser import load_card_list_file, load_card_list_clipboard
 from translator import translate_and_update_json
+# Reintento/backoff exponencial ante 429 y errores de red (mismo helper
+# que usa deck_builder.py para las llamadas a Scryfall).
+from deck_builder import _request_with_backoff
 from io import BytesIO
 
 # ─────────────────────────────────────────────────────────────
@@ -356,12 +359,12 @@ def _safe_artwork_name(name: str) -> str:
 
 def fetch_art_crop(large_url: str):
     url = large_url.replace("/large/", "/art_crop/")
-    try:
-        r = requests.get(url, timeout=14)
-        if r.status_code == 200:
+    r = _request_with_backoff(url)
+    if r and r.status_code == 200:
+        try:
             return Image.open(BytesIO(r.content)).convert("RGB")
-    except Exception as e:
-        print(f"    [!] Arte: {e}")
+        except Exception as e:
+            print(f"    [!] Arte: {e}")
     return None
 
 def load_art(card_name: str, image_url: str):
@@ -376,12 +379,12 @@ def load_art(card_name: str, image_url: str):
 
 def fetch_scryfall(name: str):
     url = f"https://api.scryfall.com/cards/named?exact={requests.utils.quote(name)}"
-    try:
-        r = requests.get(url, timeout=10)
-        if r.status_code == 200:
+    r = _request_with_backoff(url)
+    if r and r.status_code == 200:
+        try:
             return r.json()
-    except Exception as e:
-        print(f"    [!] Scryfall: {e}")
+        except Exception as e:
+            print(f"    [!] Scryfall: {e}")
     return None
 
 # ─────────────────────────────────────────────────────────────

@@ -18,6 +18,10 @@ try:
 except ImportError:
     _GT_AVAILABLE = False
 
+# Reintento/backoff exponencial ante 429 y errores de red (mismo helper
+# que usa deck_builder.py para las llamadas a Scryfall).
+from deck_builder import _request_with_backoff
+
 # ─── Tipos de carta ───────────────────────────────────────────────────────────
 _SUPERTYPES = {
     "Legendary": "Legendaria",
@@ -196,25 +200,18 @@ def _gt_translate(text: str) -> str:
 def _fetch_scryfall_es(name: str):
     """Intenta obtener la carta en español desde Scryfall."""
     url = f"https://api.scryfall.com/cards/named?exact={requests.utils.quote(name)}&lang=es"
-    for attempt in range(3):
+    r = _request_with_backoff(url)
+    if r and r.status_code == 200:
         try:
-            r = requests.get(url, timeout=10)
-            if r.status_code == 429:
-                wait = 2 ** attempt
-                print(f"    [!] Scryfall 429 — esperando {wait}s...")
-                time.sleep(wait)
-                continue
-            if r.status_code == 200:
-                d = r.json()
-                if d.get("printed_text"):
-                    return {
-                        "name_es":  d.get("printed_name") or name,
-                        "type_es":  d.get("printed_type_line") or "",
-                        "text_es":  d.get("printed_text") or "",
-                    }
-            break
+            d = r.json()
         except Exception:
-            break
+            return None
+        if d.get("printed_text"):
+            return {
+                "name_es":  d.get("printed_name") or name,
+                "type_es":  d.get("printed_type_line") or "",
+                "text_es":  d.get("printed_text") or "",
+            }
     return None
 
 
