@@ -8,27 +8,15 @@ Guarda primero en pruebas/marcos_tierras/ para revision antes de mover a assets/
 from PIL import Image, ImageDraw
 import os
 
+# Layout, paleta y primitivas de dibujo compartidos (ver card_layout.py).
+from card_layout import (
+    OUT_W, OUT_H, PAD, IX, IXR,
+    TT, TB, AT, AB, YT, YB, XT, XB, BT, BB,
+    C, rrect,
+)
+
 SCRIPT_DIR  = os.path.dirname(os.path.abspath(__file__))
 PRUEBAS_DIR = os.path.join(SCRIPT_DIR, "pruebas", "marcos_tierras")
-
-OUT_W, OUT_H = 500, 700
-PAD = 10
-IX  = PAD + 8
-IXR = OUT_W - PAD - 8
-IW  = IXR - IX
-
-TT, TB = PAD + 8, 58
-AT, AB = 60,      330
-YT, YB = 332,     370
-XT, XB = 372,     624
-BT, BB = 626,     OUT_H - PAD - 8
-
-C = {
-    "border": (  5,  5,  8),
-    "frame" : ( 30, 25, 20),
-    "gold"  : (155, 125, 62),
-    "gold_l": (210, 175, 90),
-}
 
 # Paletas para las 5 tierras basicas
 # Colores inspirados en el viejo borde de MTG (Alpha/Beta/Revised)
@@ -84,9 +72,6 @@ LAND_THEMES = {
         "tl_outline": ( 86,  94, 114),
     },
 }
-
-def rrect(draw, xy, r, fill=None, outline=None, width=1):
-    draw.rounded_rectangle(xy, r, fill=fill, outline=outline, width=width)
 
 def make_land_frame(tierra: str, out_path: str) -> None:
     theme = LAND_THEMES[tierra]

@@ -5,43 +5,19 @@ Genera los marcos vacios para cada color en assets/marcos/
 Usa el mismo estilo visual que make_cards_old_border.py
 """
 
-from PIL import Image, ImageDraw, ImageFont
+from PIL import Image, ImageDraw
 import os
+
+# Layout, paleta y primitivas de dibujo compartidos con make_cards_old_border.py,
+# make_land_cards.py y generate_land_frames.py (ver card_layout.py).
+from card_layout import (
+    OUT_W, OUT_H, PAD, IX, IXR,
+    TT, TB, AT, AB, YT, YB, XT, XB, BT, BB,
+    C, COLOR_THEMES, rrect,
+)
 
 SCRIPT_DIR  = os.path.dirname(os.path.abspath(__file__))
 MARCOS_DIR  = os.path.join(SCRIPT_DIR, "assets", "marcos")
-
-OUT_W, OUT_H = 500, 700
-PAD = 10
-IX  = PAD + 8
-IXR = OUT_W - PAD - 8
-IW  = IXR - IX
-
-TT, TB = PAD + 8, 58
-AT, AB = 60,      330
-YT, YB = 332,     370
-XT, XB = 372,     624
-BT, BB = 626,     OUT_H - PAD - 8
-
-C = {
-    "border": (  5,  5,  8),
-    "frame" : ( 30, 25, 20),
-    "gold"  : (155, 125, 62),
-    "gold_l": (210, 175, 90),
-}
-
-COLOR_THEMES = {
-    "negro":  {"tb_fill": (210,200,173), "tb_outline": ( 50, 42, 30), "tl_fill": ( 36, 28, 18), "tl_outline": ( 78, 62, 38)},
-    "rojo":   {"tb_fill": (224,192,162), "tb_outline": (108, 30, 14), "tl_fill": ( 88, 28, 16), "tl_outline": (138, 52, 24)},
-    "azul":   {"tb_fill": (182,214,232), "tb_outline": ( 30, 70,132), "tl_fill": ( 32, 68,118), "tl_outline": ( 52, 98,152)},
-    "verde":  {"tb_fill": (198,212,172), "tb_outline": ( 26, 60, 26), "tl_fill": ( 30, 58, 26), "tl_outline": ( 52, 92, 38)},
-    "blanco": {"tb_fill": (234,226,208), "tb_outline": (126,116, 92), "tl_fill": (112,102, 82), "tl_outline": (152,142,118)},
-    "cafe":        {"tb_fill": (210,198,172), "tb_outline": ( 88, 66, 38), "tl_fill": ( 68, 50, 28), "tl_outline": (108, 80, 46)},
-    "multicolor":  {"tb_fill": (228,210,152), "tb_outline": ( 92, 68, 18), "tl_fill": (140,102, 24), "tl_outline": (196,154, 56)},
-}
-
-def rrect(draw, xy, r, fill=None, outline=None, width=1):
-    draw.rounded_rectangle(xy, r, fill=fill, outline=outline, width=width)
 
 def make_empty_frame(color: str, out_path: str) -> None:
     theme = COLOR_THEMES[color]

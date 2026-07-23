@@ -39,92 +39,18 @@ PRUEBAS_DIR  = os.path.join(OUTPUT_DIR, "pruebas")
 CARTAS_DIR   = os.path.join(OUTPUT_DIR, "cartas")
 
 # ─────────────────────────────────────────────────────────────
-# DIMENSIONES  (500x700 px)
+# LAYOUT, PALETA Y FUENTES
+#   Compartidos con make_land_cards.py y con los generadores de marcos
+#   (generate_empty_frames.py / generate_land_frames.py) — ver card_layout.py.
+#   Antes estaban copiados en los cuatro archivos.
 # ─────────────────────────────────────────────────────────────
-OUT_W, OUT_H = 500, 700
-PAD = 10
-IX  = PAD + 8        # borde interior izquierdo = 18
-IXR = OUT_W - PAD - 8  # borde interior derecho  = 482
-IW  = IXR - IX       # ancho interior            = 464
-
-# ── Zonas verticales ─────────────────────────────────────────
-TT, TB = PAD + 8, 58         # título      (18–58,  40 px)
-AT, AB = 60,      330        # arte        (60–330, 270 px)
-YT, YB = 332,     370        # tipo        (332–370, 38 px)
-XT, XB = 372,     624        # textbox     (372–624, 252 px)
-BT, BB = 626,     OUT_H - PAD - 8  # bottom (626–682, 56 px)
-
-# ─────────────────────────────────────────────────────────────
-# PALETA BASE
-# ─────────────────────────────────────────────────────────────
-C = {
-    "border"  : (  5,  5,  8),
-    "frame"   : ( 30, 25, 20),
-    "gold"    : (155, 125, 62),
-    "gold_l"  : (210, 175, 90),
-    "t_name"  : (235, 212, 160),
-    "t_info"  : (118, 108,  94),
-}
-
-# ─────────────────────────────────────────────────────────────
-# TEMAS DE CUADRO DE TEXTO POR COLOR
-#   tb_fill    → fondo pergamino del textbox
-#   tb_outline → borde del textbox (color de la carta)
-#   tb_text    → color del texto del cuerpo (oscuro sobre claro)
-#   tl_fill    → fondo de la línea de tipo
-#   tl_outline → borde de la línea de tipo
-# ─────────────────────────────────────────────────────────────
-COLOR_THEMES = {
-    "negro":  {
-        "tb_fill":    (210, 200, 173),
-        "tb_outline": ( 50,  42,  30),
-        "tb_text":    ( 24,  16,   8),
-        "tl_fill":    ( 36,  28,  18),
-        "tl_outline": ( 78,  62,  38),
-    },
-    "rojo":   {
-        "tb_fill":    (224, 192, 162),
-        "tb_outline": (108,  30,  14),
-        "tb_text":    ( 28,  12,   6),
-        "tl_fill":    ( 88,  28,  16),
-        "tl_outline": (138,  52,  24),
-    },
-    "azul":   {
-        "tb_fill":    (182, 214, 232),
-        "tb_outline": ( 30,  70, 132),
-        "tb_text":    (  8,  20,  54),
-        "tl_fill":    ( 32,  68, 118),
-        "tl_outline": ( 52,  98, 152),
-    },
-    "verde":  {
-        "tb_fill":    (198, 212, 172),
-        "tb_outline": ( 26,  60,  26),
-        "tb_text":    ( 14,  24,   8),
-        "tl_fill":    ( 30,  58,  26),
-        "tl_outline": ( 52,  92,  38),
-    },
-    "blanco": {
-        "tb_fill":    (234, 226, 208),
-        "tb_outline": (126, 116,  92),
-        "tb_text":    ( 28,  20,  12),
-        "tl_fill":    (112, 102,  82),
-        "tl_outline": (152, 142, 118),
-    },
-    "cafe":   {
-        "tb_fill":    (210, 198, 172),
-        "tb_outline": ( 88,  66,  38),
-        "tb_text":    ( 24,  16,   8),
-        "tl_fill":    ( 68,  50,  28),
-        "tl_outline": (108,  80,  46),
-    },
-    "multicolor": {
-        "tb_fill":    (228, 210, 152),
-        "tb_outline": ( 92,  68,  18),
-        "tb_text":    ( 24,  18,   6),
-        "tl_fill":    (140, 102,  24),
-        "tl_outline": (196, 154,  56),
-    },
-}
+from card_layout import (
+    OUT_W, OUT_H, PAD, IX, IXR, IW,
+    TT, TB, AT, AB, YT, YB, XT, XB, BT, BB,
+    C, COLOR_THEMES, MANA_COL, mana_col,
+    FONT_PATHS, fnt, text_w, fit_font,
+    rrect, place_art, art_shadow,
+)
 
 # ─────────────────────────────────────────────────────────────
 # ICONOS DE MANÁ (uno por color)
@@ -153,21 +79,6 @@ def _get_icon(sym: str) -> Image.Image:
         _ICON_CACHE[sym] = bg.convert("RGB")
     return _ICON_CACHE[sym]
 
-# ─────────────────────────────────────────────────────────────
-# COLORES DE MANA
-# ─────────────────────────────────────────────────────────────
-MANA_COL = {
-    "B": ((20,15,20),    (210,190,215)),
-    "W": ((245,235,200), (50,40,20)),
-    "U": ((25,80,160),   (255,255,255)),
-    "R": ((200,45,20),   (255,235,190)),
-    "G": ((25,120,50),   (210,255,200)),
-    "X": ((95,95,95),    (255,255,255)),
-    "T": ((125,90,22),   (255,235,180)),
-}
-def mana_col(s):
-    return MANA_COL.get(s, ((105,105,105), (255,255,255)))
-
 _COLOR_FOLDER_MAP = {"B": "negro", "W": "blanco", "U": "azul", "R": "rojo", "G": "verde"}
 
 def _folder_color(mana_str: str, is_land: bool = False) -> str:
@@ -181,66 +92,6 @@ def _folder_color(mana_str: str, is_land: bool = False) -> str:
     if len(unique) > 1:
         return "multicolor"
     return "cafe"
-
-# ─────────────────────────────────────────────────────────────
-# FUENTES
-# ─────────────────────────────────────────────────────────────
-def _find_font(*candidates):
-    for p in candidates:
-        if p and os.path.exists(p):
-            return p
-    return candidates[0]
-
-_FP = {
-    "bold": _find_font(
-        "C:/Windows/Fonts/arialbd.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
-        "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf",
-        "/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf",
-    ),
-    "reg": _find_font(
-        "C:/Windows/Fonts/arial.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-        "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
-        "/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf",
-    ),
-    "srf": _find_font(
-        "C:/Windows/Fonts/georgia.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf",
-        "/usr/share/fonts/truetype/freefont/FreeSerif.ttf",
-    ),
-    "srfb": _find_font(
-        "C:/Windows/Fonts/georgiab.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf",
-        "/usr/share/fonts/truetype/freefont/FreeSerifBold.ttf",
-    ),
-    "srfi": _find_font(
-        "C:/Windows/Fonts/georgiai.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Italic.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSerif-Italic.ttf",
-        "/usr/share/fonts/truetype/freefont/FreeSerifItalic.ttf",
-    ),
-}
-
-def fnt(style: str, size: int) -> ImageFont.FreeTypeFont:
-    try:
-        return ImageFont.truetype(_FP.get(style, _FP["reg"]), size)
-    except Exception:
-        return ImageFont.load_default()
-
-def text_w(text: str, font) -> int:
-    return int(font.getlength(text))
-
-def fit_font(text: str, style: str, max_size: int, min_size: int, max_w: int):
-    for sz in range(max_size, min_size - 1, -1):
-        f = fnt(style, sz)
-        if text_w(text, f) <= max_w:
-            return f
-    return fnt(style, min_size)
 
 def total_lines_height(lines, lh_full, lh_blank):
     return sum(lh_blank if l is None else lh_full for l in lines)
@@ -387,32 +238,7 @@ def fetch_scryfall(name: str):
             print(f"    [!] Scryfall: {e}")
     return None
 
-# ─────────────────────────────────────────────────────────────
-# HELPERS DE DIBUJO
-# ─────────────────────────────────────────────────────────────
-def rrect(draw, xy, r, fill=None, outline=None, width=1):
-    draw.rounded_rectangle(xy, r, fill=fill, outline=outline, width=width)
-
-def place_art(img, art, x1, y1, x2, y2):
-    """Escala el arte para que entre completo (contain) sin recortar."""
-    bw, bh = x2 - x1, y2 - y1
-    aw, ah = art.size
-    scale  = min(bw / aw, bh / ah)
-    nw, nh = int(aw * scale), int(ah * scale)
-    art    = art.resize((nw, nh), Image.Resampling.LANCZOS)
-    ox     = x1 + (bw - nw) // 2
-    oy     = y1 + (bh - nh) // 2
-    img.paste(art, (ox, oy))
-
-def art_shadow(img, x1, x2, y_bottom, height=50):
-    overlay = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    od = ImageDraw.Draw(overlay)
-    for i in range(height):
-        alpha = int(180 * (i / height))
-        od.rectangle([x1, y_bottom - height + i, x2, y_bottom - height + i + 1],
-                     fill=(0, 0, 0, alpha))
-    base = Image.alpha_composite(img.convert("RGBA"), overlay)
-    img.paste(base.convert("RGB"))
+# (rrect / place_art / art_shadow viven ahora en card_layout.py, importados arriba)
 
 # ─────────────────────────────────────────────────────────────
 # GENERADOR PRINCIPAL

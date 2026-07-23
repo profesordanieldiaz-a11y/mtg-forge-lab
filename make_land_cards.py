@@ -19,34 +19,14 @@ MARCOS_DIR = os.path.join(SCRIPT_DIR, "pruebas", "marcos_tierras")
 ICONOS_DIR = os.path.join(SCRIPT_DIR, "assets", "iconos")
 OUTPUT_DIR = os.path.join(SCRIPT_DIR, "pruebas", "tierras")
 
-OUT_W, OUT_H = 500, 700
-PAD = 10
-IX  = PAD + 8
-IXR = OUT_W - PAD - 8
-IW  = IXR - IX
-
-TT, TB = PAD + 8, 58
-AT, AB = 60, 330
-YT, YB = 332, 370
-XT, XB = 372, 624
-BT, BB = 626, OUT_H - PAD - 8
-
-C = {
-    "border": (  5,  5,  8),
-    "frame":  ( 30, 25, 20),
-    "gold":   (155,125, 62),
-    "t_name": (235,212,160),
-    "t_info": (118,108, 94),
-}
-
-MANA_COL = {
-    "B": ((20,  15,  20),  (210, 190, 215)),
-    "W": ((245, 235, 200), ( 50,  40,  20)),
-    "U": ((25,  80,  160), (255, 255, 255)),
-    "R": ((200, 45,   20), (255, 235, 190)),
-    "G": ((25,  120,  50), (210, 255, 200)),
-    "T": ((125, 90,   22), (255, 235, 180)),
-}
+# Layout, paleta, fuentes y primitivas de dibujo compartidas con
+# make_cards_old_border.py y los generadores de marcos (ver card_layout.py).
+from card_layout import (
+    OUT_W, OUT_H, PAD, IX, IXR, IW,
+    TT, TB, AT, AB, YT, YB, XT, XB, BT, BB,
+    C, MANA_COL, fnt, fit_font, rrect, place_art, art_shadow,
+    text_w as tw,   # este archivo llama `tw` al medidor de ancho
+)
 
 LANDS = {
     "isla": {
@@ -111,57 +91,6 @@ LANDS = {
     },
 }
 
-def _find_font(*candidates):
-    for p in candidates:
-        if p and os.path.exists(p):
-            return p
-    return candidates[0]
-
-_FP = {
-    "bold": _find_font(
-        "C:/Windows/Fonts/arialbd.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans-Bold.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSans-Bold.ttf",
-        "/usr/share/fonts/truetype/freefont/FreeSansBold.ttf",
-        "/usr/share/fonts/truetype/ubuntu/Ubuntu-B.ttf",
-    ),
-    "reg": _find_font(
-        "C:/Windows/Fonts/arial.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSans-Regular.ttf",
-        "/usr/share/fonts/truetype/freefont/FreeSans.ttf",
-        "/usr/share/fonts/truetype/ubuntu/Ubuntu-R.ttf",
-    ),
-    "srf": _find_font(
-        "C:/Windows/Fonts/georgia.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSerif.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSerif-Regular.ttf",
-        "/usr/share/fonts/truetype/freefont/FreeSerif.ttf",
-    ),
-    "srfb": _find_font(
-        "C:/Windows/Fonts/georgiab.ttf",
-        "/usr/share/fonts/truetype/dejavu/DejaVuSerif-Bold.ttf",
-        "/usr/share/fonts/truetype/liberation/LiberationSerif-Bold.ttf",
-        "/usr/share/fonts/truetype/freefont/FreeSerifBold.ttf",
-    ),
-}
-
-def fnt(style, size):
-    try:    return ImageFont.truetype(_FP.get(style, _FP["reg"]), size)
-    except: return ImageFont.load_default()
-
-def tw(text, font):
-    return int(font.getlength(text))
-
-def fit_font(text, style, max_sz, min_sz, max_w):
-    for sz in range(max_sz, min_sz - 1, -1):
-        f = fnt(style, sz)
-        if tw(text, f) <= max_w:
-            return f
-    return fnt(style, min_sz)
-
-def rrect(draw, xy, r, fill=None, outline=None, width=1):
-    draw.rounded_rectangle(xy, r, fill=fill, outline=outline, width=width)
 
 # ── Arte ──────────────────────────────────────────────────────
 def fetch_land_art(name_en: str, set_code: str = "lea"):
@@ -179,21 +108,6 @@ def fetch_land_art(name_en: str, set_code: str = "lea"):
         print(f"    [!] Arte: {e}")
     return None
 
-def place_art(img, art, x1, y1, x2, y2):
-    bw, bh = x2 - x1, y2 - y1
-    aw, ah = art.size
-    scale  = min(bw / aw, bh / ah)
-    nw, nh = int(aw * scale), int(ah * scale)
-    art    = art.resize((nw, nh), Image.Resampling.LANCZOS)
-    img.paste(art, (x1 + (bw - nw) // 2, y1 + (bh - nh) // 2))
-
-def art_shadow(img, x1, x2, y_bottom, height=50):
-    ov = Image.new("RGBA", img.size, (0, 0, 0, 0))
-    od = ImageDraw.Draw(ov)
-    for i in range(height):
-        od.rectangle([x1, y_bottom - height + i, x2, y_bottom - height + i + 1],
-                     fill=(0, 0, 0, int(180 * i / height)))
-    img.paste(Image.alpha_composite(img.convert("RGBA"), ov).convert("RGB"))
 
 # ── Símbolo inline pequeño ────────────────────────────────────
 SYM_R = 11
