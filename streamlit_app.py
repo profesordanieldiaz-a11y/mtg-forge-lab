@@ -4,6 +4,9 @@ import os
 import re
 import subprocess
 import sys
+import time
+from queue import Queue, Empty
+from threading import Thread
 from deck_builder import ERAS, STAPLES, construir_mazo, a_moxfield, _cargar_db_local
 from translator import translate_and_update_json
 
@@ -887,26 +890,59 @@ with tabs[2]:
             cmd = [sys.executable, fabricador, "--input", ruta_fabricar]
             if forzar:
                 cmd.append("--force")
-            with st.spinner("Generando imágenes y PDF... (puede tardar varios minutos)"):
-                resultado = subprocess.run(
-                    cmd,
-                    capture_output=True,
-                    text=True,
-                    encoding="utf-8",
-                    errors="replace",
-                    timeout=600,
-                )
 
-            if resultado.returncode == 0:
+            # Streaming del log: el fabricador emite una línea por carta; se
+            # muestran las últimas líneas en vivo en vez de esperar al final.
+            # Lector en hilo + Queue (portable; select sobre pipes no funciona
+            # en Windows) para conservar el timeout aunque el proceso calle.
+            st.info("Generando imágenes y PDF... (puede tardar varios minutos)")
+            log_vivo = st.empty()
+            proceso = subprocess.Popen(
+                cmd,
+                stdout=subprocess.PIPE,
+                stderr=subprocess.STDOUT,
+                text=True,
+                encoding="utf-8",
+                errors="replace",
+            )
+            cola: Queue = Queue()
+
+            def _leer_stdout(pipe, q):
+                for linea_hilo in pipe:
+                    q.put(linea_hilo)
+                q.put(None)  # centinela: fin de la salida
+
+            Thread(target=_leer_stdout, args=(proceso.stdout, cola), daemon=True).start()
+
+            lineas = []
+            expiro = False
+            limite = time.monotonic() + 600
+            while True:
+                restante = limite - time.monotonic()
+                if restante <= 0:
+                    proceso.kill()
+                    expiro = True
+                    break
+                try:
+                    linea = cola.get(timeout=min(restante, 1.0))
+                except Empty:
+                    continue  # sin salida nueva; re-chequear el límite
+                if linea is None:
+                    break
+                lineas.append(linea.rstrip("\n"))
+                log_vivo.code("\n".join(lineas[-20:]))
+            returncode = proceso.wait()
+            log_vivo.empty()
+
+            if expiro:
+                st.error("❌ Tiempo agotado (600 s): proceso interrumpido.")
+            elif returncode == 0:
                 st.success("✅ ¡Cartas fabricadas correctamente!")
             else:
                 st.error("❌ Hubo un error durante la fabricación.")
 
-            with st.expander("📄 Log del proceso", expanded=(resultado.returncode != 0)):
-                salida = resultado.stdout
-                if resultado.stderr:
-                    salida += "\n--- ERRORES ---\n" + resultado.stderr
-                st.text(salida)
+            with st.expander("📄 Log del proceso", expanded=(expiro or returncode != 0)):
+                st.text("\n".join(lineas))
 
             nombre_base = os.path.splitext(archivo_elegido)[0].replace(" ", "_").replace("/", "-")
             nombre_pdf  = f"{nombre_base}_OldBorder_Imprimir.pdf"
