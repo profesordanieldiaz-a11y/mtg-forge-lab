@@ -15,6 +15,8 @@ Retorna una lista normalizada de entradas:
 
 import re
 
+from deck_builder import _buscar_en_db_local
+
 # ─── Patrones ────────────────────────────────────────────────────────────────
 
 # Moxfield / Arena: "2 Card Name (SET) 123" o "2 Card Name (SET) 123 *F*"
@@ -135,7 +137,12 @@ def _parse_line(line: str, fmt: str, section: str):
     if m:
         count = int(m.group(1))
         name = _clean_name(m.group(2))
-        if name and len(name) >= 3 and count <= 99:
+        # Igual que Moxfield/MTGO, que solo aceptan lo que matchea su regex
+        # específica: en plain, además, el nombre debe existir en la DB local
+        # ("cards_all_eras.json") para no tragarse líneas sueltas que no son
+        # cartas (p.ej. "4 copies recommended").
+        if (name and len(name) >= 3 and count <= 99
+                and _buscar_en_db_local(name, "all") is not None):
             return {
                 "name":             name,
                 "count":            count,
